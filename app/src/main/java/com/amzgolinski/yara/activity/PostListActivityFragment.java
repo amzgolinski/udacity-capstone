@@ -1,4 +1,4 @@
-package amzgolinski.example.android.yara.activity;
+package com.amzgolinski.yara.activity;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import amzgolinski.example.android.yara.R;
+import com.amzgolinski.yara.R;
 
 /**
  * A placeholder fragment containing a simple view.
