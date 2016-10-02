@@ -5,11 +5,11 @@
     <item
       android:id="@+id/drawer_accounts"
       android:icon="@drawable/ic_account_circle_black_24dp"
-      android:title="@string/accounts_title"/>
+      android:title="@string/accounts_drawer_title"/>
     <item
       android:id="@+id/drawer_subscriptions"
       android:icon="@drawable/ic_settings_black_24dp"
-      android:title="@string/subscriptions_title"/>
+      android:title="@string/subscriptions_drawer_title"/>
   </group>
 
 </menu>

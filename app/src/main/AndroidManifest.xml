@@ -1,35 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.amzgolinski.yara"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.amzgolinski.yara">
 
-  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.INTERNET"/>
 
   <application
-    android:allowBackup="true"
-    android:icon="@mipmap/ic_launcher"
-    android:label="@string/app_name"
-    android:name=".YaraApplication"
-    android:supportsRtl="true"
-    android:theme="@style/Theme.Yara.Light">
-    <activity
-      android:name=".activity.PostListActivity"
+      android:name=".YaraApplication"
+      android:allowBackup="true"
+      android:icon="@mipmap/ic_launcher"
       android:label="@string/app_name"
-      android:theme="@style/Theme.Yara.Light.NoActionBar">
+      android:supportsRtl="true"
+      android:theme="@style/Theme.Yara.Light">
+    <meta-data
+        android:name="net.dean.jraw.USER_AGENT_OVERRIDE"
+        android:value="android:com.amgolinski.yara:v1.0.0 (by /u/capstone_test)"/>
+
+    <activity
+        android:name=".activity.PostListActivity"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Yara.Light.NoActionBar">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
+
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
-
     <activity
         android:name=".activity.LoginActivity"
         android:label="@string/title_login_activity"
-        android:theme="@style/Theme.Yara.Light.NoActionBar" />
-
+        android:theme="@style/Theme.Yara.Light.NoActionBar"/>
     <activity android:name=".activity.UserInfoActivity"/>
+    <activity
+        android:name=".activity.SubredditActivity"
+        android:label="@string/title_activity_subreddit"
+        android:parentActivityName=".activity.PostListActivity"
+        android:theme="@style/Theme.Yara.Light.NoActionBar">
 
-    <meta-data android:name="net.dean.jraw.USER_AGENT_OVERRIDE"
-               android:value="android:com.amgolinski.yara:v1.0.0 (by /u/capstone_test)" />
+      <!-- Parent activity meta-data to support 4.0 and lower -->
+      <meta-data
+          android:name="android.support.PARENT_ACTIVITY"
+          android:value=".activity.PostListActivity"/>
+    </activity>
+
+    <provider
+        android:name=".data.RedditProvider"
+        android:authorities="com.amzgolinski.yara.provider"
+        android:enabled="true"
+        android:exported="true">
+    </provider>
+
+    <activity
+        android:name=".activity.AccountsActivity"
+        android:label="@string/title_activity_accounts"
+        android:parentActivityName=".activity.PostListActivity"
+        android:theme="@style/Theme.Yara.Light">
+      <meta-data
+          android:name="android.support.PARENT_ACTIVITY"
+          android:value="com.amzgolinski.yara.activity.PostListActivity"/>
+    </activity>
   </application>
 
 </manifest>

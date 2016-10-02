@@ -8,8 +8,15 @@ import net.dean.jraw.RedditClient;
 import net.dean.jraw.auth.AuthenticationManager;
 import net.dean.jraw.auth.RefreshTokenHandler;
 import net.dean.jraw.http.LoggingMode;
+import net.dean.jraw.http.oauth.Credentials;
 
 public class YaraApplication extends Application {
+
+  public static final Credentials CREDENTIALS =
+      Credentials.installedApp(
+          "zmhW2FxYKlE5cQ",
+          "https://github.com/amzgolinski/udacity-capstone"
+      );
 
   @Override
   public void onCreate() {

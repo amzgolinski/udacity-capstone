@@ -1,11 +1,9 @@
 package com.amzgolinski.yara.activity;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,28 +12,33 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
+import com.amzgolinski.yara.callbacks.AccountRetrievedCallback;
+import com.amzgolinski.yara.tasks.FetchLoggedInAccountTask;
+import com.amzgolinski.yara.tasks.RefreshAccessTokenTask;
 
 import net.dean.jraw.auth.AuthenticationManager;
 import net.dean.jraw.auth.AuthenticationState;
-import net.dean.jraw.auth.NoSuchTokenException;
-import net.dean.jraw.http.oauth.Credentials;
-import net.dean.jraw.http.oauth.OAuthException;
+import net.dean.jraw.models.LoggedInAccount;
 
 import butterknife.OnClick;
 
 public class PostListActivity extends AppCompatActivity
-    implements NavigationView.OnNavigationItemSelectedListener {
+    implements NavigationView.OnNavigationItemSelectedListener, AccountRetrievedCallback {
 
   // Static variables
   private static final String LOG_TAG = PostListActivity.class.getName();
 
   private DrawerLayout mDrawerLayout;
+  private LoggedInAccount mRedditAccount;
+  private TextView mUsername;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    Log.d(LOG_TAG, "onCreate");
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_post_list);
 
@@ -65,7 +68,7 @@ public class PostListActivity extends AppCompatActivity
 
       @Override
       public void onDrawerOpened(View drawerView) {
-        // Code here will be triggered once the drawer open as we dont want anything to happen so
+        // Code here will be triggered once the drawer open as we don't want anything to happen so
         // we leave this blank
         super.onDrawerOpened(drawerView);
       }
@@ -76,24 +79,10 @@ public class PostListActivity extends AppCompatActivity
 
     //calling sync state is necessary or else your hamburger icon wont show up
     actionBarDrawerToggle.syncState();
-
-    /*
-    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-    fab.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-          .setAction("Action", null).show();
-      }
-    });
-    */
   }
 
-  //@OnClick(R.id.login_button)
-  public void login(View view) {
-    Toast.makeText(getApplicationContext(), "Login", Toast.LENGTH_SHORT).show();
-    startActivity(new Intent(this, LoginActivity.class));
-  }
+  @OnClick(R.id.login_button)
+  public void login(View view) {startActivity(new Intent(this, LoginActivity.class));}
 
   @OnClick(R.id.user_info_button)
   public void userInfo(View view) {
@@ -109,7 +98,6 @@ public class PostListActivity extends AppCompatActivity
 
   @Override
   public boolean onNavigationItemSelected(final MenuItem menuItem) {
-    Log.d(LOG_TAG, "CLICKED");
     menuItem.setChecked(true);
     //Checking if the item is in checked state or not, if not make it in checked state
     if(menuItem.isChecked()) menuItem.setChecked(false);
@@ -123,14 +111,26 @@ public class PostListActivity extends AppCompatActivity
 
       //Replacing the main content with ContentFragment Which is our Inbox View;
       case R.id.drawer_accounts:
-        Toast.makeText(getApplicationContext(), "Accounts", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), "Accounts", Toast.LENGTH_SHORT).show();
+        startActivity(new Intent(this, AccountsActivity.class));
         return true;
 
       case R.id.drawer_subscriptions:
-        Toast.makeText(getApplicationContext(), "Subscriptions", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getApplicationContext(), "Subscriptions", Toast.LENGTH_SHORT).show();
+        startActivity(new Intent(this, SubredditActivity.class));
         return true;
     }
     return false;
+  }
+
+  @Override
+  public void onBackPressed() {
+
+    if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+      mDrawerLayout.closeDrawer(GravityCompat.START);
+    } else {
+      super.onBackPressed();
+    }
   }
 
   @Override
@@ -141,34 +141,17 @@ public class PostListActivity extends AppCompatActivity
 
     switch (state) {
       case READY:
+        configUser();
+        break;
+      case NEED_REFRESH:
+        new RefreshAccessTokenTask(this.getApplicationContext(), this).execute();
         break;
       case NONE:
         Toast.makeText(PostListActivity.this, "Log in first", Toast.LENGTH_SHORT).show();
         break;
-      case NEED_REFRESH:
-        refreshAccessTokenAsync();
-        break;
     }
   }
 
-  private void refreshAccessTokenAsync() {
-    new AsyncTask<Credentials, Void, Void>() {
-      @Override
-      protected Void doInBackground(Credentials... params) {
-        try {
-          AuthenticationManager.get().refreshAccessToken(LoginActivity.CREDENTIALS);
-        } catch (NoSuchTokenException | OAuthException e) {
-          Log.e(LOG_TAG, "Could not refresh access token", e);
-        }
-        return null;
-      }
-
-      @Override
-      protected void onPostExecute(Void v) {
-        Log.d(LOG_TAG, "Reauthenticated");
-      }
-    }.execute();
-  }
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     // Handle action bar item clicks here. The action bar will
@@ -183,4 +166,27 @@ public class PostListActivity extends AppCompatActivity
 
     return super.onOptionsItemSelected(item);
   }
+
+
+  public void onAccountRetrieved(LoggedInAccount account) {
+    Log.d(LOG_TAG, "onAccountRetrieved");
+    mRedditAccount = account;
+    configUser();
+  }
+
+  private void configUser() {
+    Log.d(LOG_TAG, "configUser");
+    if (mRedditAccount == null) {
+      new FetchLoggedInAccountTask(this.getApplicationContext(), this).execute();
+      return;
+    }
+    NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+    navigationView.setNavigationItemSelectedListener(this);
+    View header = navigationView.getHeaderView(0);
+    mUsername = (TextView) header.findViewById(R.id.reddit_username);
+    mUsername.setText(mRedditAccount.getFullName());
+
+  }
+
+
 }

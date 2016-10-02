@@ -16,6 +16,7 @@
   </style>
 
   <style name="Theme.Yara.Light.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
   <style name="Theme.Yara.Light.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
 </resources>

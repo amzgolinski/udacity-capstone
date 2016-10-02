@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -16,16 +17,16 @@ import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
 import com.amzgolinski.yara.R;
+import com.amzgolinski.yara.YaraApplication;
+import com.amzgolinski.yara.util.Utils;
 
 import java.net.URL;
 
 public class LoginActivity extends AppCompatActivity {
+
   private static final String LOG_TAG = LoginActivity.class.getSimpleName();
-  public static final Credentials CREDENTIALS =
-      Credentials.installedApp(
-        "zmhW2FxYKlE5cQ",
-        "https://github.com/amzgolinski/udacity-capstone"
-      );
+
+
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +39,15 @@ public class LoginActivity extends AppCompatActivity {
     // OAuth2 scopes to request. See https://www.reddit.com/dev/api/oauth for a full list
     String[] scopes = getResources().getStringArray(R.array.scopes);
 
-    final URL authorizationUrl = helper.getAuthorizationUrl(CREDENTIALS, true, true, scopes);
+    final URL authorizationUrl = helper.getAuthorizationUrl(YaraApplication.CREDENTIALS, true, true, scopes);
+
+    CookieManager cookieManager = CookieManager.getInstance();
+    //noinspection deprecation
+
+    //cookieManager.removeAllCookie();
     final WebView webView = ((WebView) findViewById(R.id.webview));
+    webView.clearHistory();
+    webView.clearFormData();
     // Load the authorization URL into the browser
     webView.loadUrl(authorizationUrl.toExternalForm());
     webView.setWebViewClient(new WebViewClient() {
@@ -47,7 +55,7 @@ public class LoginActivity extends AppCompatActivity {
       public void onPageStarted(WebView view, String url, Bitmap favicon) {
         if (url.contains("code=")) {
           // We've detected the redirect URL
-          onUserChallenge(url, CREDENTIALS);
+          onUserChallenge(url, YaraApplication.CREDENTIALS);
         } else if (url.contains("error=")) {
           Toast.makeText(LoginActivity.this, "You must press 'allow' to log in with this account", Toast.LENGTH_SHORT).show();
           webView.loadUrl(authorizationUrl.toExternalForm());
@@ -61,8 +69,16 @@ public class LoginActivity extends AppCompatActivity {
       @Override
       protected String doInBackground(String... params) {
         try {
-          OAuthData data = AuthenticationManager.get().getRedditClient().getOAuthHelper().onUserChallenge(params[0], creds);
+          OAuthData data = AuthenticationManager
+              .get()
+              .getRedditClient()
+              .getOAuthHelper()
+              .onUserChallenge(params[0], creds);
           AuthenticationManager.get().getRedditClient().authenticate(data);
+
+          String user = AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
+          String token = AuthenticationManager.get().getRedditClient().getOAuthHelper().getRefreshToken();
+          Utils.addUser(LoginActivity.this.getApplicationContext(), user, token);
           return AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
         } catch (NetworkException | OAuthException e) {
           Log.e(LOG_TAG, "Could not log in", e);

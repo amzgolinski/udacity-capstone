@@ -8,9 +8,16 @@
   <string name="drawer_open">Open navigation drawer</string>
   <string name="drawer_close">Close navigation drawer</string>
 
-  <string name="accounts_title">Accounts</string>
-  <string name="subscriptions_title">Subscriptions</string>
+  <string name="accounts_drawer_title">Accounts</string>
+  <string name="subscriptions_drawer_title">Subscriptions</string>
 
+  <string name="navigation_drawer_open">Open navigation drawer</string>
+  <string name="navigation_drawer_close">Close navigation drawer</string>
+
+  <string name="title_activity_subreddit">Subscribed Subreddits</string>
   <string name="title_login_activity">Login to Reddit</string>
+  <string name="title_activity_accounts">Reddit Accounts</string>
+
+  <string name="accounts_key">accounts</string>
 
 </resources>
