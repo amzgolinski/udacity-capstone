@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.amzgolinski.yara.YaraApplication;
-import com.amzgolinski.yara.activity.PostListActivity;
 import com.amzgolinski.yara.callbacks.AccountRetrievedCallback;
 import com.amzgolinski.yara.util.Utils;
 
@@ -14,9 +13,6 @@ import net.dean.jraw.auth.NoSuchTokenException;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.models.LoggedInAccount;
 
-/**
- * Created by azgolinski on 10/1/16.
- */
 
 public class RefreshAccessTokenTask extends AsyncTask<Void, Void, LoggedInAccount> {
 

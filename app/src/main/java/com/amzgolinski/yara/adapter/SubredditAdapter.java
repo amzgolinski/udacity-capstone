@@ -12,10 +12,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import com.amzgolinski.yara.R;
-import com.amzgolinski.yara.activity.SubredditActivityFragment;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
+import com.amzgolinski.yara.ui.SubredditFragment;
 
 public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.ViewHolder> {
 
@@ -41,13 +38,13 @@ public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.View
       public void bindView(View view, Context context, Cursor cursor) {
         Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
         TextView subredditName = (TextView) view.findViewById(R.id.subreddit_name);
-        subredditName.setText(cursor.getString(SubredditActivityFragment.COL_NAME));
+        subredditName.setText(cursor.getString(SubredditFragment.COL_NAME));
       }
     };
   }
 
   public void swapCursor(Cursor cursor) {
-    Log.d(LOG_TAG, "swapCursor");
+    //Log.d(LOG_TAG, "swapCursor");
     mCursorAdapter.swapCursor(cursor);
     notifyDataSetChanged();
     //mEmpty.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
@@ -70,7 +67,7 @@ public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.View
 
   @Override
   public int getItemCount() {
-    Log.d(LOG_TAG, "swapCursor: " + mCursorAdapter.getCount());
+    //Log.d(LOG_TAG, "swapCursor: " + mCursorAdapter.getCount());
     return mCursorAdapter.getCount();
   }
 

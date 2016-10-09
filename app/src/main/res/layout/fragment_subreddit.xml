@@ -9,7 +9,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.amzgolinski.yara.activity.SubredditActivityFragment"
+    tools:context="com.amzgolinski.yara.ui.SubredditFragment"
     tools:showIn="@layout/activity_subreddit">
 
   <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"

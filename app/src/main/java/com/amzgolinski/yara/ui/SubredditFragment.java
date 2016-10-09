@@ -1,7 +1,6 @@
-package com.amzgolinski.yara.activity;
+package com.amzgolinski.yara.ui;
 
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -11,35 +10,32 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.adapter.SubredditAdapter;
 import com.amzgolinski.yara.data.RedditContract;
-import com.amzgolinski.yara.util.Utils;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class SubredditActivityFragment extends Fragment
+public class SubredditFragment extends Fragment
     implements LoaderManager.LoaderCallbacks<Cursor> {
 
-  private final String LOG_TAG = SubredditActivityFragment.class.getSimpleName();
+  private final String LOG_TAG = SubredditFragment.class.getSimpleName();
 
   private SubredditAdapter mAdapter;
 
   private static final int SUBREDDIT_LOADER = 0;
 
   private static final String[] SUBREDDIT_COLUMNS = {
-      RedditContract.SubredditEntry.COLUMN_ID,
-      RedditContract.SubredditEntry.COLUMN_SUBREDDIT_ID,
-      RedditContract.SubredditEntry.COLUMN_NAME,
-      RedditContract.SubredditEntry.COLUMN_TITLE,
-      RedditContract.SubredditEntry.COLUMN_RELATIVE_LOCATION,
-      RedditContract.SubredditEntry.COLUMN_SELECTED,
+      RedditContract.SubredditsEntry.COLUMN_ID,
+      RedditContract.SubredditsEntry.COLUMN_SUBREDDIT_ID,
+      RedditContract.SubredditsEntry.COLUMN_NAME,
+      RedditContract.SubredditsEntry.COLUMN_TITLE,
+      RedditContract.SubredditsEntry.COLUMN_RELATIVE_LOCATION,
+      RedditContract.SubredditsEntry.COLUMN_SELECTED,
   };
 
   public static final int COL_ID = 0;
@@ -60,7 +56,7 @@ public class SubredditActivityFragment extends Fragment
   public Loader<Cursor> onCreateLoader(int id, Bundle args) {
     return new CursorLoader(
         getActivity(),
-        RedditContract.SubredditEntry.CONTENT_URI,
+        RedditContract.SubredditsEntry.CONTENT_URI,
         SUBREDDIT_COLUMNS,
         null,
         null,
@@ -85,7 +81,7 @@ public class SubredditActivityFragment extends Fragment
     Log.d(LOG_TAG, "onLoadFinished");
     // Swap the new cursor in.  (The framework will take care of closing the
     // old cursor once we return.)
-    Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(data));
+    //Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(data));
 
     /*
     if (Utils.isCursorEmpty(data)) {

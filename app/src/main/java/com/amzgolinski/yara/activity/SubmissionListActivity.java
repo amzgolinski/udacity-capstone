@@ -26,11 +26,11 @@ import net.dean.jraw.models.LoggedInAccount;
 
 import butterknife.OnClick;
 
-public class PostListActivity extends AppCompatActivity
+public class SubmissionListActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener, AccountRetrievedCallback {
 
   // Static variables
-  private static final String LOG_TAG = PostListActivity.class.getName();
+  private static final String LOG_TAG = SubmissionListActivity.class.getName();
 
   private DrawerLayout mDrawerLayout;
   private LoggedInAccount mRedditAccount;
@@ -40,7 +40,7 @@ public class PostListActivity extends AppCompatActivity
   protected void onCreate(Bundle savedInstanceState) {
     Log.d(LOG_TAG, "onCreate");
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_post_list);
+    setContentView(R.layout.activity_submission_list);
 
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
@@ -79,15 +79,15 @@ public class PostListActivity extends AppCompatActivity
 
     //calling sync state is necessary or else your hamburger icon wont show up
     actionBarDrawerToggle.syncState();
+
   }
 
+
+
+  /*
   @OnClick(R.id.login_button)
   public void login(View view) {startActivity(new Intent(this, LoginActivity.class));}
-
-  @OnClick(R.id.user_info_button)
-  public void userInfo(View view) {
-    startActivity(new Intent(this, UserInfoActivity.class));
-  }
+  */
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
@@ -141,13 +141,13 @@ public class PostListActivity extends AppCompatActivity
 
     switch (state) {
       case READY:
-        configUser();
+        setNavigationDrawerUser();
         break;
       case NEED_REFRESH:
         new RefreshAccessTokenTask(this.getApplicationContext(), this).execute();
         break;
       case NONE:
-        Toast.makeText(PostListActivity.this, "Log in first", Toast.LENGTH_SHORT).show();
+        Toast.makeText(SubmissionListActivity.this, "Log in first", Toast.LENGTH_SHORT).show();
         break;
     }
   }
@@ -171,10 +171,12 @@ public class PostListActivity extends AppCompatActivity
   public void onAccountRetrieved(LoggedInAccount account) {
     Log.d(LOG_TAG, "onAccountRetrieved");
     mRedditAccount = account;
-    configUser();
+    setNavigationDrawerUser();
+    setUserInfo();
   }
 
-  private void configUser() {
+  private void setNavigationDrawerUser() {
+
     Log.d(LOG_TAG, "configUser");
     if (mRedditAccount == null) {
       new FetchLoggedInAccountTask(this.getApplicationContext(), this).execute();
@@ -188,5 +190,18 @@ public class PostListActivity extends AppCompatActivity
 
   }
 
+
+  private void setUserInfo() {
+
+    //((TextView) findViewById(R.id.user_name)).setText("Name: " + mRedditAccount.getFullName());
+    /*
+    ((TextView) findViewById(R.id.user_created)).setText("Created: " + mRedditAccount.getCreated());
+    ((TextView) findViewById(R.id.user_link_karma)).setText("Link karma: " + mRedditAccount.getLinkKarma());
+    ((TextView) findViewById(R.id.user_comment_karma)).setText("Comment karma: " + mRedditAccount.getCommentKarma());
+    ((TextView) findViewById(R.id.user_has_mail)).setText("Has mail? " + (mRedditAccount.getInboxCount() > 0));
+    ((TextView) findViewById(R.id.user_inbox_count)).setText("Inbox count: " + mRedditAccount.getInboxCount());
+    ((TextView) findViewById(R.id.user_is_mod)).setText("Is mod? " + mRedditAccount.isMod());
+  */
+  }
 
 }

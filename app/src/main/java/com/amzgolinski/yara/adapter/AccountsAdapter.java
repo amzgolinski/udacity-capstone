@@ -2,15 +2,24 @@ package com.amzgolinski.yara.adapter;
 
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
+import com.amzgolinski.yara.YaraApplication;
+import com.amzgolinski.yara.tasks.SetRefreshTokenTask;
+import com.amzgolinski.yara.util.Utils;
+
+import net.dean.jraw.auth.AuthenticationManager;
+import net.dean.jraw.http.NetworkException;
 
 import java.util.List;
 
@@ -18,7 +27,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
 
   private static final String LOG_TAG = AccountsAdapter.class.getName();
 
-  // Store a member variable for the contacts
+  // Store a member variable for the accounts
   private List<String> mAccounts;
 
   // Store the context for easy access
@@ -34,7 +43,6 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
   private Context getContext() {
     return mContext;
   }
-
 
   // Usually involves inflating a layout from XML and returning the holder
   @Override
@@ -59,8 +67,8 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
     // Set item views based on your views and data model
     TextView textView = viewHolder.nameTextView;
     textView.setText(account);
-    Button button = viewHolder.messageButton;
-    button.setText("Message");
+    ImageButton delete = viewHolder.deleteButton;
+    delete.setTag(position);
   }
 
   // Returns the total count of items in the list
@@ -69,13 +77,62 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
     return mAccounts.size();
   }
 
+  public void deleteUser(int userNum) {
+    String user = mAccounts.get(userNum);
+    String message = String.format("Deleting user %s ", user);
+    Toast.makeText(mContext, message, Toast.LENGTH_SHORT).show();
+    String loggedIn = Utils.getCurrentUser(mContext);
+    Log.d(LOG_TAG, "Logged in user: " + loggedIn);
+    // user to delete is currently logged in
+    mAccounts.remove(userNum);
+
+    if (user.equals(loggedIn)) {
+
+      if (mAccounts.size() >= 1) {
+        String newUser = mAccounts.get(0);
+        Utils.putCurrentUser(mContext, newUser);
+        String oauthToken = Utils.getOauthRefreshToken(mContext, newUser);
+        new SetRefreshTokenTask().execute(oauthToken);
+
+      }
+
+    }
+
+    Utils.deleteUser(mContext, user);
+    this.notifyDataSetChanged();
+  }
+
+  private void revokeToken() {
+
+    new AsyncTask<Void, Void, Void>() {
+      @Override
+      protected Void doInBackground(Void... params) {
+        try {
+          AuthenticationManager
+              .get()
+              .getRedditClient()
+              .getOAuthHelper()
+              .revokeRefreshToken(YaraApplication.CREDENTIALS);
+
+        } catch (NetworkException | NullPointerException networkException) {
+          Log.e(LOG_TAG, "Could not log in", networkException);
+
+        }
+        return null;
+      }
+
+    }.execute();
+  }
+
+
+
   // Provide a direct reference to each of the views within a data item
   // Used to cache the views within the item layout for fast access
-  public static class ViewHolder extends RecyclerView.ViewHolder {
+  public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
     // Your holder should contain a member variable
     // for any view that will be set as you render a row
     public TextView nameTextView;
-    public Button messageButton;
+    public ImageButton deleteButton;
 
     // We also create a constructor that accepts the entire item row
     // and does the view lookups to find each subview
@@ -83,9 +140,33 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
       // Stores the itemView in a public final member variable that can be used
       // to access the context from any ViewHolder instance.
       super(itemView);
+      itemView.setOnClickListener(this);
 
       nameTextView = (TextView) itemView.findViewById(R.id.account_name);
-      messageButton = (Button) itemView.findViewById(R.id.message_button);
+      deleteButton = (ImageButton) itemView.findViewById(R.id.delete_account_button);
+      deleteButton.setOnClickListener(new View.OnClickListener() {
+
+        public void onClick(View view) {
+          int userNum = (Integer) view.getTag();
+          AccountsAdapter.this.deleteUser(userNum);
+        }
+      });
+    }
+
+    public void onClick(View view) {
+      int pos = getAdapterPosition();
+
+      Log.d(LOG_TAG, "onClick " + Integer.toString(pos));
+      // Check if an item was deleted, but the user clicked it before the UI removed it
+      if (pos != RecyclerView.NO_POSITION) {
+        String newUser = mAccounts.get(pos);
+        Log.d(LOG_TAG, "User: " + newUser);
+        Utils.putCurrentUser(mContext, newUser);
+        String oauthToken = Utils.getOauthRefreshToken(mContext, newUser);
+        new SetRefreshTokenTask().execute(oauthToken);
+        // We can access the data within the views
+        Toast.makeText(mContext, nameTextView.getText(), Toast.LENGTH_SHORT).show();
+      }
     }
   }
 

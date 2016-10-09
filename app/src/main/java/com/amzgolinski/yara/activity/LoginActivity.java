@@ -1,11 +1,11 @@
 package com.amzgolinski.yara.activity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
@@ -26,8 +26,6 @@ public class LoginActivity extends AppCompatActivity {
 
   private static final String LOG_TAG = LoginActivity.class.getSimpleName();
 
-
-
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -39,12 +37,9 @@ public class LoginActivity extends AppCompatActivity {
     // OAuth2 scopes to request. See https://www.reddit.com/dev/api/oauth for a full list
     String[] scopes = getResources().getStringArray(R.array.scopes);
 
-    final URL authorizationUrl = helper.getAuthorizationUrl(YaraApplication.CREDENTIALS, true, true, scopes);
+    final URL authorizationUrl =
+        helper.getAuthorizationUrl(YaraApplication.CREDENTIALS, true, true, scopes);
 
-    CookieManager cookieManager = CookieManager.getInstance();
-    //noinspection deprecation
-
-    //cookieManager.removeAllCookie();
     final WebView webView = ((WebView) findViewById(R.id.webview));
     webView.clearHistory();
     webView.clearFormData();
@@ -57,7 +52,10 @@ public class LoginActivity extends AppCompatActivity {
           // We've detected the redirect URL
           onUserChallenge(url, YaraApplication.CREDENTIALS);
         } else if (url.contains("error=")) {
-          Toast.makeText(LoginActivity.this, "You must press 'allow' to log in with this account", Toast.LENGTH_SHORT).show();
+          Toast.makeText(
+              LoginActivity.this,
+              "You must press 'allow' to log in with this account",
+              Toast.LENGTH_SHORT).show();
           webView.loadUrl(authorizationUrl.toExternalForm());
         }
       }
@@ -75,10 +73,18 @@ public class LoginActivity extends AppCompatActivity {
               .getOAuthHelper()
               .onUserChallenge(params[0], creds);
           AuthenticationManager.get().getRedditClient().authenticate(data);
+          //AuthenticationManager.get().onAuthenticated(data);
 
           String user = AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
-          String token = AuthenticationManager.get().getRedditClient().getOAuthHelper().getRefreshToken();
-          Utils.addUser(LoginActivity.this.getApplicationContext(), user, token);
+          String token =
+              AuthenticationManager.get().getRedditClient().getOAuthHelper().getRefreshToken();
+
+          String token2 = AuthenticationManager.get().getRedditClient().getOAuthData().getRefreshToken();
+
+          Log.d(LOG_TAG, "token " + token + " token2 " + token2);
+
+          Utils.addUser(LoginActivity.this.getApplicationContext(), user, token2);
+
           return AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
         } catch (NetworkException | OAuthException e) {
           Log.e(LOG_TAG, "Could not log in", e);
@@ -90,6 +96,11 @@ public class LoginActivity extends AppCompatActivity {
       protected void onPostExecute(String s) {
         Log.i(LOG_TAG, s);
         LoginActivity.this.finish();
+        // start the SubmissionListActivity
+        Intent intent =
+            new Intent(LoginActivity.this.getApplicationContext(), SubmissionListActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
       }
     }.execute(url);
   }

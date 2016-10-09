@@ -8,25 +8,27 @@ import android.provider.BaseColumns;
 
 public class RedditContract {
 
-  public static final String CONTENT_AUTHORITY = "com.amzgolinski.yara.provider";
+  static final String CONTENT_AUTHORITY = "com.amzgolinski.yara.provider";
 
-  public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+  private static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
-  public static final String PATH_SUBREDDITS   = "subreddits";
+  private static final String PATH_SUBREDDITS   = "subreddits";
+  private static final String PATH_SUBMISSIONS  = "submissions";
+  private static final String PATH_COMMENTS     = "comments";
 
-  public static final class SubredditEntry implements BaseColumns {
+  public static final class SubredditsEntry implements BaseColumns {
 
     public static final Uri CONTENT_URI =
         BASE_CONTENT_URI.buildUpon().appendPath(PATH_SUBREDDITS).build();
 
-    public static final String CONTENT_TYPE =
+    static final String CONTENT_TYPE =
         ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SUBREDDITS;
 
-    public static final String CONTENT_ITEM_TYPE =
+    static final String CONTENT_ITEM_TYPE =
         ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SUBREDDITS;
 
     // table name
-    public static final String TABLE_NAME = "subreddits";
+    static final String TABLE_NAME = "subreddits";
 
     // columns
     public static final String COLUMN_ID                = "_id";
@@ -36,8 +38,78 @@ public class RedditContract {
     public static final String COLUMN_RELATIVE_LOCATION = "relative_location";
     public static final String COLUMN_SELECTED          = "selected";
 
-
     public static Uri buildSubredditUri(long id) {
+      return ContentUris.withAppendedId(CONTENT_URI, id);
+    }
+
+  }
+
+  public static final class SubmissionsEntry implements BaseColumns {
+
+    public static final Uri CONTENT_URI =
+        BASE_CONTENT_URI.buildUpon().appendPath(PATH_SUBMISSIONS).build();
+
+    static final String CONTENT_TYPE =
+        ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SUBMISSIONS;
+
+    static final String CONTENT_ITEM_TYPE =
+        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SUBMISSIONS;
+
+    // table name
+    static final String TABLE_NAME = "submissions";
+
+    // columns
+    public static final String COLUMN_ID             = "_id";
+    public static final String COLUMN_SUBMISSION_ID  = "submission_id";
+    public static final String COLUMN_SUBREDDIT_ID   = "subreddit_id";
+    public static final String COLUMN_SUBREDDIT_NAME = "subreddit_name";
+    public static final String COLUMN_TITLE          = "title";
+    public static final String COLUMN_AUTHOR         = "author";
+    public static final String COLUMN_URL            = "url";
+    public static final String COLUMN_TEXT           = "text";
+    public static final String COLUMN_COMMENT_COUNT  = "comment_count";
+    public static final String COLUMN_THUMBNAIL      = "thumbnail";
+    public static final String COLUMN_SCORE          = "score";
+    public static final String COLUMN_IS_READ_ONLY   = "read_only";
+    public static final String COLUMN_TYPE           = "type";
+
+    public static Uri buildSubmissionUri(long id) {
+      return ContentUris.withAppendedId(CONTENT_URI, id);
+    }
+
+  }
+
+  public static final class CommentsEntry implements BaseColumns {
+
+    public static final Uri CONTENT_URI =
+        BASE_CONTENT_URI.buildUpon().appendPath(PATH_COMMENTS).build();
+
+    public static final String CONTENT_TYPE =
+        ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_COMMENTS;
+
+    public static final String CONTENT_ITEM_TYPE =
+        ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_COMMENTS;
+
+    // table name
+    public static final String TABLE_NAME = "comments";
+
+    // columns
+    public static final String COLUMN_ID            = "_id";
+    public static final String COLUMN_COMMENT_ID    = "comment_id";
+    public static final String COLUMN_SUBMISSION_ID = "submission_id";
+    public static final String COLUMN_PARENT_ID     = "parent_id";
+    public static final String COLUMN_AUTHOR        = "relative_location";
+    public static final String COLUMN_BODY          = "body";
+    public static final String COLUMN_SCORE         = "score";
+    public static final String COLUMN_VOTE          = "vote";
+    public static final String COLUMN_DEPTH         = "depth";
+    public static final String COLUMN_TEXT          = "text";
+    public static final String COLUMN_IS_VISIBLE    = "visible";
+    public static final String COLUMN_IS_ARCHIVED   = "archived";
+    public static final String COLUMN_TYPE          = "type";
+    public static final String COLUMN_NUM_CHILDREN  = "child_count";
+
+    public static Uri buildSubmissionUri(long id) {
       return ContentUris.withAppendedId(CONTENT_URI, id);
     }
 

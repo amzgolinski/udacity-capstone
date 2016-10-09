@@ -8,4 +8,28 @@
   <!-- Default screen margins, per the Android Design guidelines. -->
   <dimen name="nav_header_vertical_spacing">16dp</dimen>
   <dimen name="nav_header_height">160dp</dimen>
+
+  <dimen name="comment_padding">2dp</dimen>
+
+  <!-- submission thumbnail -->
+  <dimen name="image_height">75dp</dimen>
+  <dimen name="image_width">75dp</dimen>
+  <dimen name="image_margin_start">0dp</dimen>
+
+  <!-- submission item -->
+  <dimen name="submission_item_horiz_padding">8dp</dimen>
+  <dimen name="submission_item_text_size">12sp</dimen>
+  <dimen name="submission_item_padding_start">12dp</dimen>
+  <dimen name="submission_item_padding_bottom">4dp</dimen>
+
+  <!-- submission detail -->
+  <dimen name="submission_detail_text_size">14sp</dimen>
+  <dimen name="submission_detail_padding_start">12dp</dimen>
+  <dimen name="submission_detail_padding_top">8dp</dimen>
+  <dimen name="submission_detail_padding_bottom">4dp</dimen>
+
+  <!-- comment -->
+  <dimen name="comment_text_size">12sp</dimen>
+  <dimen name="comment_padding_top">8dp</dimen>
+
 </resources>

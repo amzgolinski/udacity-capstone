@@ -16,7 +16,7 @@
         android:value="android:com.amgolinski.yara:v1.0.0 (by /u/capstone_test)"/>
 
     <activity
-        android:name=".activity.PostListActivity"
+        android:name=".activity.SubmissionListActivity"
         android:label="@string/app_name"
         android:theme="@style/Theme.Yara.Light.NoActionBar">
       <intent-filter>
@@ -29,17 +29,16 @@
         android:name=".activity.LoginActivity"
         android:label="@string/title_login_activity"
         android:theme="@style/Theme.Yara.Light.NoActionBar"/>
-    <activity android:name=".activity.UserInfoActivity"/>
     <activity
         android:name=".activity.SubredditActivity"
         android:label="@string/title_activity_subreddit"
-        android:parentActivityName=".activity.PostListActivity"
+        android:parentActivityName=".activity.SubmissionListActivity"
         android:theme="@style/Theme.Yara.Light.NoActionBar">
 
       <!-- Parent activity meta-data to support 4.0 and lower -->
       <meta-data
           android:name="android.support.PARENT_ACTIVITY"
-          android:value=".activity.PostListActivity"/>
+          android:value=".activity.SubmissionListActivity"/>
     </activity>
 
     <provider
@@ -52,11 +51,19 @@
     <activity
         android:name=".activity.AccountsActivity"
         android:label="@string/title_activity_accounts"
-        android:parentActivityName=".activity.PostListActivity"
+        android:parentActivityName=".activity.SubmissionListActivity"
         android:theme="@style/Theme.Yara.Light">
       <meta-data
           android:name="android.support.PARENT_ACTIVITY"
-          android:value="com.amzgolinski.yara.activity.PostListActivity"/>
+          android:value="com.amzgolinski.yara.activity.SubmissionListActivity"/>
+    </activity>
+    <activity
+        android:name=".activity.SubmissionDetailActivity"
+        android:parentActivityName=".activity.SubmissionListActivity"
+        android:theme="@style/Theme.Yara.Light">
+      <meta-data
+          android:name="android.support.PARENT_ACTIVITY"
+          android:value="com.amzgolinski.yara.activity.SubmissionListActivity"/>
     </activity>
   </application>
 

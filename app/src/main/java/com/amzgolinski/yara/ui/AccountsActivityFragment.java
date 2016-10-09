@@ -1,4 +1,4 @@
-package com.amzgolinski.yara.activity;
+package com.amzgolinski.yara.ui;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -22,6 +22,7 @@ public class AccountsActivityFragment extends Fragment {
   private AccountsAdapter mAccountsAdapter;
 
   public AccountsActivityFragment() {
+    // empty
   }
 
   @Override
@@ -32,6 +33,10 @@ public class AccountsActivityFragment extends Fragment {
 
     // Lookup the recyclerview in activity layout
     RecyclerView accountsView = (RecyclerView) root.findViewById(R.id.accounts);
+
+    RecyclerView.ItemDecoration itemDecoration = new
+        DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL_LIST);
+    accountsView.addItemDecoration(itemDecoration);
 
     ArrayList<String> list = Utils.getUsers(this.getContext());
     Log.d(LOG_TAG, list.toString());
@@ -44,7 +49,7 @@ public class AccountsActivityFragment extends Fragment {
 
     // Set layout manager to position the items
     accountsView.setLayoutManager(new LinearLayoutManager(this.getContext()));
-    // That's all!
+
     return root;
   }
 
