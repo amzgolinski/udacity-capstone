@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.CookieManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.callbacks.AccountRetrievedCallback;
 import com.amzgolinski.yara.tasks.FetchLoggedInAccountTask;
 import com.amzgolinski.yara.tasks.RefreshAccessTokenTask;
+import com.amzgolinski.yara.util.Utils;
 
 import net.dean.jraw.auth.AuthenticationManager;
 import net.dean.jraw.auth.AuthenticationState;
@@ -142,12 +144,18 @@ public class SubmissionListActivity extends AppCompatActivity
     switch (state) {
       case READY:
         setNavigationDrawerUser();
+        Utils.setLoginStatus(this, true);
         break;
       case NEED_REFRESH:
+        Utils.setLoginStatus(this, true);
         new RefreshAccessTokenTask(this.getApplicationContext(), this).execute();
         break;
       case NONE:
+        Utils.setLoginStatus(this, false);
         Toast.makeText(SubmissionListActivity.this, "Log in first", Toast.LENGTH_SHORT).show();
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.removeAllCookie();
+        startActivity(new Intent(this, LoginActivity.class));
         break;
     }
   }
@@ -172,7 +180,6 @@ public class SubmissionListActivity extends AppCompatActivity
     Log.d(LOG_TAG, "onAccountRetrieved");
     mRedditAccount = account;
     setNavigationDrawerUser();
-    setUserInfo();
   }
 
   private void setNavigationDrawerUser() {
@@ -189,19 +196,4 @@ public class SubmissionListActivity extends AppCompatActivity
     mUsername.setText(mRedditAccount.getFullName());
 
   }
-
-
-  private void setUserInfo() {
-
-    //((TextView) findViewById(R.id.user_name)).setText("Name: " + mRedditAccount.getFullName());
-    /*
-    ((TextView) findViewById(R.id.user_created)).setText("Created: " + mRedditAccount.getCreated());
-    ((TextView) findViewById(R.id.user_link_karma)).setText("Link karma: " + mRedditAccount.getLinkKarma());
-    ((TextView) findViewById(R.id.user_comment_karma)).setText("Comment karma: " + mRedditAccount.getCommentKarma());
-    ((TextView) findViewById(R.id.user_has_mail)).setText("Has mail? " + (mRedditAccount.getInboxCount() > 0));
-    ((TextView) findViewById(R.id.user_inbox_count)).setText("Inbox count: " + mRedditAccount.getInboxCount());
-    ((TextView) findViewById(R.id.user_is_mod)).setText("Is mod? " + mRedditAccount.isMod());
-  */
-  }
-
 }

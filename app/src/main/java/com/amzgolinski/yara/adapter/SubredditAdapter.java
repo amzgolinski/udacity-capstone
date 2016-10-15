@@ -2,17 +2,20 @@ package com.amzgolinski.yara.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.ui.SubredditFragment;
+
+import java.util.ArrayList;
 
 public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.ViewHolder> {
 
@@ -21,8 +24,11 @@ public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.View
   // Store the context for easy access
   private Context mContext;
   private CursorAdapter mCursorAdapter;
+  private ArrayList<String> mToRemove;
 
   public SubredditAdapter(Context context, Cursor cursor) {
+
+    mToRemove = new ArrayList<>();
 
     mContext = context;
     mCursorAdapter = new CursorAdapter(mContext, cursor, 0) {
@@ -36,9 +42,26 @@ public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.View
 
       @Override
       public void bindView(View view, Context context, Cursor cursor) {
-        Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
-        TextView subredditName = (TextView) view.findViewById(R.id.subreddit_name);
-        subredditName.setText(cursor.getString(SubredditFragment.COL_NAME));
+        //Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
+        TextView subredditNameTextView = (TextView) view.findViewById(R.id.subreddit_name);
+
+        String subredditName = cursor.getString(SubredditFragment.COL_NAME);
+        String formattedName = String.format(
+            context.getResources().getString(R.string.subreddit_name),
+            subredditName
+        );
+        subredditNameTextView.setText(formattedName);
+
+        CheckBox checkBox = (CheckBox) view.findViewById(R.id.subreddit_checkBox);
+        checkBox.setTag(subredditName);
+        checkBox.setChecked(true);
+        checkBox.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            Toast.makeText(mContext, "Clicked", Toast.LENGTH_SHORT).show();
+            mToRemove.add((String) v.getTag());
+          }
+        });
       }
     };
   }
@@ -47,7 +70,6 @@ public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.View
     //Log.d(LOG_TAG, "swapCursor");
     mCursorAdapter.swapCursor(cursor);
     notifyDataSetChanged();
-    //mEmpty.setVisibility(getItemCount() == 0 ? View.VISIBLE : View.GONE);
   }
 
   @Override
@@ -90,5 +112,9 @@ public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.View
       mSubredditName = (TextView) itemView.findViewById(R.id.subreddit_name);
 
     }
+  }
+
+  public ArrayList<String> getToRemove() {
+    return mToRemove;
   }
 }

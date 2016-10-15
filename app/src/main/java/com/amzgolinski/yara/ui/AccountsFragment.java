@@ -15,13 +15,13 @@ import com.amzgolinski.yara.util.Utils;
 
 import java.util.ArrayList;
 
-public class AccountsActivityFragment extends Fragment {
+public class AccountsFragment extends Fragment {
 
-  private static final String LOG_TAG = AccountsActivityFragment.class.getName();
+  private static final String LOG_TAG = AccountsFragment.class.getName();
 
   private AccountsAdapter mAccountsAdapter;
 
-  public AccountsActivityFragment() {
+  public AccountsFragment() {
     // empty
   }
 

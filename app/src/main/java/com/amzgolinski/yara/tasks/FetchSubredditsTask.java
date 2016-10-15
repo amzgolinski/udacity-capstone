@@ -1,8 +1,12 @@
 package com.amzgolinski.yara.tasks;
 
+import android.appwidget.AppWidgetManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.Html;
 import android.util.Log;
 
 import net.dean.jraw.RedditClient;
@@ -21,6 +25,7 @@ import java.util.Vector;
 import com.amzgolinski.yara.callbacks.RedditDownloadCallback;
 import com.amzgolinski.yara.data.RedditContract.SubredditsEntry;
 import com.amzgolinski.yara.data.RedditContract.SubmissionsEntry;
+import com.amzgolinski.yara.service.YaraUtilityService;
 import com.amzgolinski.yara.util.Utils;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -50,7 +55,7 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
       Listing<Subreddit> subreddits = paginator.next();
       for (Subreddit subreddit : subreddits) {
         Log.d(LOG_TAG, "Subreddit " + subreddit.toString());
-        if (!subreddit.isNsfw()) {
+        if (!subreddit.isNsfw() && subreddit.isUserSubscriber()) {
           latestSubreddits.put(subreddit.getId(), subreddit);
         }
       }
@@ -83,7 +88,7 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
 
       ArrayList<Submission> toAdd = new ArrayList<>();
       for (Submission submission : submissions) {
-        Log.d(LOG_TAG, submission.toString());
+        //Log.d(LOG_TAG, submission.toString());
         if (Utils.isValidSubmission(submission)) {
           toAdd.add(submission);
         }
@@ -96,11 +101,13 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
 
   @Override
   public void onPostExecute(HashMap<String, Subreddit> result) {
+    Log.d(LOG_TAG, "onPostExecute");
+    Intent dataUpdated = new Intent();
+    dataUpdated.setAction("your.package.name.MANUAL_UPDATE");
 
-    for (Subreddit subreddit : result.values()) {
-      //Log.d(LOG_TAG, "Subreddit " + Long.parseLong(subreddit.getId(), 36));
-    }
-
+    //LocalBroadcastManager.getInstance(mContext).sendBroadcast(dataUpdated);
+    mContext.sendBroadcast(dataUpdated);
+    //Log.d(LOG_TAG, "sentBroadcast");
     mCallback.onDownloadComplete(result);
   }
 
@@ -122,12 +129,7 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
     numInserted = mContext.getContentResolver()
         .bulkInsert(SubmissionsEntry.CONTENT_URI, contentValuesArray);
 
-    for (Submission submission : submissions) {
-      //new FetchCommentsTask(mContext).execute(submission.getId());
-    }
-
     return numInserted;
-
   }
 
   private int addSubreddits(ArrayList<Subreddit> subreddits) {
@@ -183,6 +185,16 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
     int readOnly = (Utils.isSubmissionReadOnly(submission) ? 1 : 0);
     toReturn.put(SubmissionsEntry.COLUMN_IS_READ_ONLY, readOnly);
     toReturn.put(SubmissionsEntry.COLUMN_THUMBNAIL, submission.getThumbnail());
+    String selfText = submission.data("selftext_html");
+    if (!Utils.isStringEmpty(selfText)) {
+      selfText = StringEscapeUtils.unescapeHtml4(selfText);
+      Log.d(LOG_TAG, "SELF " + selfText);
+      selfText = Utils.removeHtmlSpacing(selfText);
+      Log.d(LOG_TAG, "SELF " + selfText);
+    }
+
+    toReturn.put(SubmissionsEntry.COLUMN_TEXT, selfText);
+    toReturn.put(SubmissionsEntry.COLUMN_VOTE, submission.getVote().getValue());
 
     return toReturn;
   }

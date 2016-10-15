@@ -11,19 +11,20 @@ import android.util.Log;
 import com.amzgolinski.yara.R;
 
 import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.VoteDirection;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
 public class Utils {
 
+  public static final String EMPTY_STRING = "";
   private static final String LOG_TAG = Utils.class.getName();
-  private static final String EMPTY_STRING = "";
 
-  public interface CommentType {
-    int HAS_MORE_COMMENTS = 0;
-    int NO_REPLIES = 1;
-  }
+  public static final int UPVOTE = 1;
+  public static final int NOVOTE = 0;
+  public static final int DOWNVOTE = -1;
+
 
   public static void addUser(Context context, String username, String oauthToken) {
     Log.d(LOG_TAG, "addUser");
@@ -96,8 +97,33 @@ public class Utils {
     return new ArrayList<>(getUserHashMap(context));
   }
 
+  public static VoteDirection getVote(int currentVote, int newVote) {
+    Log.d(LOG_TAG, "current " + currentVote + " new " + newVote);
+    VoteDirection toReturn = VoteDirection.NO_VOTE;
+
+    if (newVote > currentVote ) {
+      toReturn = VoteDirection.UPVOTE;
+    } else if (newVote < currentVote) {
+      toReturn = VoteDirection.DOWNVOTE;
+    }
+    Log.d(LOG_TAG, toReturn.toString());
+    return toReturn;
+  }
+
   public static boolean isCursorEmpty(Cursor data) {
     return (data == null || !data.moveToNext());
+  }
+
+  public static boolean getLoginStatus(Context context) {
+
+    SharedPreferences prefs =
+        PreferenceManager.getDefaultSharedPreferences(context);
+
+    return prefs.getBoolean(context.getString(R.string.logged_in), false);
+  }
+
+  public static boolean isMarkedNsfw(String toCheck) {
+    return toCheck.toLowerCase().contains("nsfw");
   }
 
   public static boolean isNetworkAvailable(Context ctx) {
@@ -106,9 +132,14 @@ public class Utils {
     return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
   }
 
-  /**
-   *
-   */
+  public static boolean isStringEmpty(String toTest) {
+    return (toTest == null || toTest.equals(EMPTY_STRING));
+  }
+
+  public static boolean isSubmissionReadOnly(Submission submission) {
+    return (submission.isArchived() || submission.isLocked());
+  }
+
   public static boolean isValidSubmission(Submission submission) {
     return (
         (!submission.isNsfw()) ||
@@ -118,38 +149,10 @@ public class Utils {
     );
   }
 
-  /**
-   *
-   */
-  public static boolean isMarkedNsfw(String toCheck) {
-    return toCheck.toLowerCase().contains("nsfw");
-  }
-
-  /**
-   *
-   */
-  public static boolean isStringEmpty(String toTest) {
-    return (toTest == null || toTest.equals(EMPTY_STRING));
-  }
-
-  /**
-   *
-   */
-  public static boolean isSubmissionReadOnly(Submission submission) {
-    return (submission.isArchived() || submission.isLocked());
-  }
-
-  /**
-   *
-   */
   public static String longToRedditId(long id) {
-    //Log.d(LOG_TAG, "ID: " + id + " translated " + Long.toString(id, 36));
     return Long.toString(id, 36);
   }
 
-  /**
-   *
-   */
   public static void putCurrentUser(Context context, String username) {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     SharedPreferences.Editor editor = prefs.edit();
@@ -157,9 +160,6 @@ public class Utils {
     editor.apply();
   }
 
-  /**
-   *
-   */
   public static void putOauthRefreshToken(Context context, String username, String oauthToken) {
     Log.d(LOG_TAG, String.format("Adding token: username %s\nToken %s ", username, oauthToken));
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -168,9 +168,6 @@ public class Utils {
     editor.apply();
   }
 
-  /**
-   *
-   */
   public static long redditIdToLong(String redditId) {
 
     Long id = Long.parseLong(redditId, 36);
@@ -178,17 +175,11 @@ public class Utils {
     return id;
   }
 
-  /**
-   *
-   */
   public static long redditParentIdToLong(String parentId) {
     Long id = Long.parseLong(parentId.substring(3), 36);
     return id;
   }
 
-  /**
-   *
-   */
   public static String removeHtmlSpacing(String html) {
 
     html = html.replace("<div class=\"md\">", "");
@@ -199,8 +190,13 @@ public class Utils {
     return html;
   }
 
+  public static void setLoginStatus(Context context, boolean status) {
 
-
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean(context.getString(R.string.logged_in), status);
+    editor.apply();
+  }
 
 }
 

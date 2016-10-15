@@ -3,7 +3,7 @@ package com.amzgolinski.yara.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,26 +13,37 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.activity.SubmissionDetailActivity;
+import com.amzgolinski.yara.callbacks.RedditDownloadCallback;
 import com.amzgolinski.yara.data.RedditContract;
+import com.amzgolinski.yara.service.YaraUtilityService;
+import com.amzgolinski.yara.tasks.SubmitVoteTask;
 import com.amzgolinski.yara.ui.SubmissionListFragment;
 import com.amzgolinski.yara.util.Utils;
 import com.squareup.picasso.Picasso;
 
+import net.dean.jraw.models.VoteDirection;
 
-public class SubmissionsAdapter extends RecyclerView.Adapter<SubmissionsAdapter.ViewHolder> {
 
-  private static final String LOG_TAG = SubmissionsAdapter.class.getName();
+public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAdapter.ViewHolder> {
+
+  private static final String LOG_TAG = SubmissionListAdapter.class.getName();
 
   // Store the context for easy access
   private Context mContext;
   private CursorAdapter mCursorAdapter;
+  private RedditDownloadCallback mCallback;
 
-  public SubmissionsAdapter(Context context, Cursor cursor) {
+  private static int AD_TYPE = 1 ;
+  private static int CONTENT_TYPE = 2 ;
+
+  public SubmissionListAdapter(Context context, Cursor cursor, RedditDownloadCallback callback) {
 
     mContext = context;
+    mCallback = callback;
     mCursorAdapter = new CursorAdapter(mContext, cursor, 0) {
 
       @Override
@@ -42,8 +53,8 @@ public class SubmissionsAdapter extends RecyclerView.Adapter<SubmissionsAdapter.
       }
 
       @Override
-      public void bindView(View view, Context context, Cursor cursor) {
-        //Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
+      public void bindView(View view, Context context, final Cursor cursor) {
+        //  Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
         // subreddit name
         TextView submissionSubreddit = (TextView) view.findViewById(R.id.submission_item_subreddit);
         String subredditText = String.format(
@@ -55,7 +66,6 @@ public class SubmissionsAdapter extends RecyclerView.Adapter<SubmissionsAdapter.
         // submission title
         TextView submissionTitle = (TextView) view.findViewById(R.id.submission_item_title);
         submissionTitle.setText(cursor.getString(SubmissionListFragment.COL_TITLE));
-
 
         // submission comment count
         TextView submissionCommentCount
@@ -70,6 +80,49 @@ public class SubmissionsAdapter extends RecyclerView.Adapter<SubmissionsAdapter.
         TextView submissionScore = (TextView) view.findViewById(R.id.submission_item_score);
         submissionScore.setText(cursor.getString(SubmissionListFragment.COL_SCORE));
 
+        String submissionId = Integer.toString(cursor.getInt(SubmissionListFragment.COL_SUBMISSION_ID));
+        int vote  = cursor.getInt(SubmissionListFragment.COL_VOTE);
+        // up vote
+        ImageView upArrowView = (ImageView) view.findViewById(R.id.submission_item_up_arrow);
+
+
+        if (vote == VoteDirection.UPVOTE.getValue()) {
+          upArrowView.setImageDrawable(
+              mContext.getResources().getDrawable(R.drawable.arrow_up_bold_circle_accent, null));
+        } else {
+          upArrowView.setImageDrawable(
+              mContext.getResources().getDrawable(R.drawable.arrow_up_bold_circle_outline, null));
+        }
+        upArrowView.setTag(R.string.submission_id, submissionId);
+        upArrowView.setTag(R.string.vote, vote);
+        upArrowView.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            long submissionId = Long.parseLong((String)v.getTag(R.string.submission_id));
+            int vote = Integer.parseInt((String)v.getTag(R.string.vote));
+            YaraUtilityService.submitVote(mContext, submissionId, vote, Utils.UPVOTE);
+          }
+        });
+
+        // down vote
+        ImageView downArrowView = (ImageView) view.findViewById(R.id.submission_item_down_arrow);
+        if (vote == VoteDirection.DOWNVOTE.getValue()) {
+          downArrowView.setImageDrawable(
+              mContext.getResources().getDrawable(R.drawable.arrow_down_bold_circle_accent, null));
+        } else {
+          downArrowView.setImageDrawable(
+              mContext.getResources().getDrawable(R.drawable.arrow_down_bold_circle_outline, null));
+        }
+        downArrowView.setTag(R.string.submission_id, submissionId);
+        downArrowView.setTag(R.string.vote, vote);
+        downArrowView.setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            long submissionId = Long.parseLong((String)v.getTag(R.string.submission_id));
+            int vote = Integer.parseInt((String)v.getTag(R.string.vote));
+            YaraUtilityService.submitVote(mContext, submissionId, vote, Utils.DOWNVOTE);
+          }
+        });
 
         String thumbnail = cursor.getString(SubmissionListFragment.COL_THUMBNAIL);
         ImageView thumbnailView = (ImageView) view.findViewById(R.id.submission_item_thumbnail);
@@ -80,6 +133,9 @@ public class SubmissionsAdapter extends RecyclerView.Adapter<SubmissionsAdapter.
               .error(R.drawable.ic_do_not_distrub_black_24dp)
               .into(thumbnailView);
         } else {
+          thumbnailView.setBackgroundColor(
+              mContext.getResources().getColor(R.color.gray_300, null)
+          );
           thumbnailView.setImageDrawable(
               mContext.getResources().getDrawable(R.drawable.ic_comment_white_36dp, null)
           );
@@ -90,6 +146,7 @@ public class SubmissionsAdapter extends RecyclerView.Adapter<SubmissionsAdapter.
 
   public void swapCursor(Cursor cursor) {
     Log.d(LOG_TAG, "swapCursor");
+
     mCursorAdapter.swapCursor(cursor);
     notifyDataSetChanged();
   }
@@ -104,14 +161,12 @@ public class SubmissionsAdapter extends RecyclerView.Adapter<SubmissionsAdapter.
 
   @Override
   public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-    // Passing the inflater job to the cursor-adapter
     View v = mCursorAdapter.newView(mContext, mCursorAdapter.getCursor(), parent);
     return new ViewHolder(v);
   }
 
   @Override
   public int getItemCount() {
-    //Log.d(LOG_TAG, "getItemCount: " + mCursorAdapter.getCount());
     return mCursorAdapter.getCount();
   }
 

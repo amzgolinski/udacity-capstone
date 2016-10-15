@@ -41,12 +41,10 @@ public class RedditProvider extends ContentProvider {
         RedditContract.SubmissionsEntry.TABLE_NAME + "/#",
         SUBMISSION_WITH_ID);
 
-    /*
     matcher.addURI(
         authority,
-        RedditContract.SubmissionsEntry.TABLE_NAME + "/#",
+        RedditContract.SubmissionsEntry.TABLE_NAME + "/submission/#",
         SUBMISSION_WITH_SUBREDDIT_ID);
-        */
 
     // Comments
     matcher.addURI(authority, RedditContract.CommentsEntry.TABLE_NAME, COMMENT);
@@ -82,6 +80,17 @@ public class RedditProvider extends ContentProvider {
             RedditContract.SubredditsEntry.TABLE_NAME,
             RedditContract.SubredditsEntry.COLUMN_SUBREDDIT_ID+ " = ?",
             new String[]{String.valueOf(ContentUris.parseId(uri))}
+        );
+
+        break;
+      }
+
+      case SUBMISSION: {
+
+        rowsDeleted = db.delete(
+            RedditContract.SubmissionsEntry.TABLE_NAME,
+            selection,
+            selectionArgs
         );
 
         break;
@@ -186,6 +195,7 @@ public class RedditProvider extends ContentProvider {
       }
 
       case SUBMISSION: {
+        Log.d(LOG_TAG, "INSERTING SUBMISSION");
         long _id = db.insert(RedditContract.SubmissionsEntry.TABLE_NAME, null, values);
         // insert unless it is already contained in the database
         if (_id > 0) {
@@ -316,16 +326,19 @@ public class RedditProvider extends ContentProvider {
       }
 
       case SUBMISSION: {
+        Log.d(LOG_TAG, "SUBMISSION");
         results = getSubmissions(projection, selection, selectionArgs, sortOrder);
         break;
       }
 
       case SUBMISSION_WITH_ID: {
+        Log.d(LOG_TAG, "SUBMISSION_WITH_ID");
         results = getSubmissionsById(uri, projection, sortOrder);
         break;
       }
 
       case SUBMISSION_WITH_SUBREDDIT_ID: {
+        Log.d(LOG_TAG, "SUBMISSION_WITH_ID");
         results = getSubmissionsBySubredditId(uri, projection, sortOrder);
         break;
       }
@@ -457,6 +470,7 @@ public class RedditProvider extends ContentProvider {
     try {
       for (ContentValues value : values) {
 
+        //Log.d(LOG_TAG, value.toString());
         if (value == null) {
           throw new IllegalArgumentException("Null content values not allowed");
         }

@@ -1,11 +1,18 @@
 package com.amzgolinski.yara.ui;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.MergeCursor;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,13 +20,23 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
-import com.amzgolinski.yara.adapter.SubmissionsAdapter;
+import com.amzgolinski.yara.adapter.SubmissionListAdapter;
 import com.amzgolinski.yara.callbacks.RedditDownloadCallback;
 import com.amzgolinski.yara.data.RedditContract;
+import com.amzgolinski.yara.service.YaraUtilityService;
 import com.amzgolinski.yara.tasks.FetchSubredditsTask;
+import com.amzgolinski.yara.tasks.SubmitVoteTask;
 import com.amzgolinski.yara.util.Utils;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 
 public class SubmissionListFragment extends Fragment
@@ -35,9 +52,11 @@ public class SubmissionListFragment extends Fragment
       RedditContract.SubmissionsEntry.COLUMN_SUBREDDIT_ID,
       RedditContract.SubmissionsEntry.COLUMN_SUBREDDIT_NAME,
       RedditContract.SubmissionsEntry.COLUMN_TITLE,
+      RedditContract.SubmissionsEntry.COLUMN_TEXT,
       RedditContract.SubmissionsEntry.COLUMN_THUMBNAIL,
       RedditContract.SubmissionsEntry.COLUMN_COMMENT_COUNT,
       RedditContract.SubmissionsEntry.COLUMN_SCORE,
+      RedditContract.SubmissionsEntry.COLUMN_VOTE,
   };
 
   public static final int COL_ID = 0;
@@ -45,13 +64,18 @@ public class SubmissionListFragment extends Fragment
   public static final int COL_SUBREDDIT_ID = 2;
   public static final int COL_SUBREDDIT_NAME = 3;
   public static final int COL_TITLE = 4;
-  public static final int COL_THUMBNAIL = 5;
-  public static final int COL_COMMENT_COUNT = 6;
-  public static final int COL_SCORE = 7;
+  public static final int COL_TEXT = 5;
+  public static final int COL_THUMBNAIL = 6;
+  public static final int COL_COMMENT_COUNT = 7;
+  public static final int COL_SCORE = 8;
+  public static final int COL_VOTE = 9;
 
-  private SubmissionsAdapter mAdapter;
-  private ViewGroup mProgress;
-  private SwipeRefreshLayout mSwipeRefreshLayout;
+  // Views
+  @BindView(R.id.submission_list_progress_bar_layout) ViewGroup mProgress;
+  @BindView(R.id.submission_list_swipe_refresh) SwipeRefreshLayout mSwipeRefreshLayout;
+
+  private SubmissionListAdapter mAdapter;
+  private BroadcastReceiver mReceiver;
 
   public SubmissionListFragment() {
     // empty
@@ -62,7 +86,16 @@ public class SubmissionListFragment extends Fragment
     Log.d(LOG_TAG, "onActivityCreated");
     super.onActivityCreated(savedInstanceState);
     getLoaderManager().initLoader(SUBMISSIONS_LOADER, null, this);
+    mReceiver = new BroadcastReceiver() {
 
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        Log.d(LOG_TAG, "onActivityCreated");
+        Log.d(LOG_TAG, intent.getAction());
+        restartLoader();
+        mProgress.setVisibility(View.GONE);
+      }
+    };
   }
 
   @Override
@@ -84,9 +117,8 @@ public class SubmissionListFragment extends Fragment
 
     Log.d(LOG_TAG, "onCreateView");
     View root = inflater.inflate(R.layout.fragment_submission_list, container, false);
+    ButterKnife.bind(this, root);
     RecyclerView submissionsList = (RecyclerView) root.findViewById(R.id.submission_list);
-    mSwipeRefreshLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipe_refresh);
-
     mSwipeRefreshLayout.setOnRefreshListener(
         new SwipeRefreshLayout.OnRefreshListener() {
           @Override
@@ -95,27 +127,34 @@ public class SubmissionListFragment extends Fragment
             fetchSubreddits();
           }
         });
-
-
     RecyclerView.ItemDecoration itemDecoration = new
         DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL_LIST);
     submissionsList.addItemDecoration(itemDecoration);
     submissionsList.setLayoutManager(new LinearLayoutManager(getContext()));
-    mAdapter = new SubmissionsAdapter(getActivity(), null);
+    mAdapter = new SubmissionListAdapter(getActivity(), null, new RedditDownloadCallback() {
+      @Override
+      public void onDownloadComplete(Object reslt) {
+        restartLoader();
+      }
+    });
     submissionsList.setAdapter(mAdapter);
-
-    mProgress = (ViewGroup) root.findViewById(R.id.progress_bar_layout);
     mProgress.setVisibility(View.VISIBLE);
+
+    /*
+    MobileAds.initialize(getContext(), "ca-app-pub-3940256099942544~3347511713");
+    AdView mAdView = (AdView) root.findViewById(R.id.ad_view);
+    AdRequest adRequest = new AdRequest.Builder().build();
+    mAdView.loadAd(adRequest);
+    */
     return root;
   }
 
   @Override
   public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
     Log.d(LOG_TAG, "onLoadFinished");
-    // Swap the new cursor in.  (The framework will take care of closing the
-    // old cursor once we return.)
     //Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(data));
-    if (Utils.isCursorEmpty(data)) {
+
+    if (Utils.isCursorEmpty(data) && Utils.getLoginStatus(getContext()) == true) {
       fetchSubreddits();
     } else {
       mProgress.setVisibility(View.GONE);
@@ -133,6 +172,7 @@ public class SubmissionListFragment extends Fragment
   public void onPause() {
     Log.d(LOG_TAG, "onPause");
     super.onPause();
+    LocalBroadcastManager.getInstance(getContext()).unregisterReceiver((mReceiver));
   }
 
   @Override
@@ -140,6 +180,11 @@ public class SubmissionListFragment extends Fragment
     Log.d(LOG_TAG, "onResume");
     getLoaderManager().restartLoader(SUBMISSIONS_LOADER, null, this);
     super.onResume();
+    LocalBroadcastManager.getInstance(getContext()).registerReceiver(
+        mReceiver, new IntentFilter(YaraUtilityService.ACTION_SUBMIT_VOTE));
+
+    LocalBroadcastManager.getInstance(getContext()).registerReceiver(
+        mReceiver, new IntentFilter(YaraUtilityService.ACTION_SUBREDDIT_UNSUBSCRIBE));
   }
 
   @Override
@@ -165,6 +210,4 @@ public class SubmissionListFragment extends Fragment
       getLoaderManager().restartLoader(SUBMISSIONS_LOADER, null, this);
     }
   }
-
-
 }

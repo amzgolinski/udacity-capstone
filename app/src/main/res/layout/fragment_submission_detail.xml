@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/submission_container"
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
@@ -7,6 +8,15 @@
   <ListView
       android:id="@+id/submission_detail_listview"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content" />
+      android:layout_height="wrap_content"
+      android:paddingBottom="64dp"
+      android:divider="@drawable/divider"/>
+
+  <!--
+  <TextView android:id="@android:id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="There are currently no comments to display." />
+            -->
 
 </LinearLayout>

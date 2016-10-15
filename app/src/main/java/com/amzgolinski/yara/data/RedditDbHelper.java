@@ -21,6 +21,7 @@ public class RedditDbHelper extends SQLiteOpenHelper {
   @Override
   public void onOpen(SQLiteDatabase sqLiteDatabase) {
 
+
     // Drop the Subreddits table
     sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RedditContract.SubredditsEntry.TABLE_NAME);
 
@@ -77,14 +78,16 @@ public class RedditDbHelper extends SQLiteOpenHelper {
         RedditContract.SubmissionsEntry.COLUMN_AUTHOR + " TEXT NOT NULL, " +
         RedditContract.SubmissionsEntry.COLUMN_COMMENT_COUNT + " TEXT NOT NULL, " +
         RedditContract.SubmissionsEntry.COLUMN_TYPE + " TEXT, " +
+        RedditContract.SubmissionsEntry.COLUMN_TEXT + " TEXT, " +
         RedditContract.SubmissionsEntry.COLUMN_URL + " TEXT NOT NULL, " +
         RedditContract.SubmissionsEntry.COLUMN_SCORE + " INTEGER, " +
+        RedditContract.SubmissionsEntry.COLUMN_VOTE + " INTEGER, " +
         RedditContract.SubmissionsEntry.COLUMN_IS_READ_ONLY + " INTEGER, " +
         RedditContract.SubmissionsEntry.COLUMN_THUMBNAIL + " TEXT, " +
 
         " FOREIGN KEY (" + RedditContract.SubmissionsEntry.COLUMN_SUBREDDIT_ID +
         ") REFERENCES " + RedditContract.SubredditsEntry.TABLE_NAME + " (" +
-        RedditContract.SubredditsEntry.COLUMN_SUBREDDIT_ID + ")," +
+        RedditContract.SubredditsEntry.COLUMN_SUBREDDIT_ID + ") ON DELETE CASCADE," +
 
         "UNIQUE (" + RedditContract.SubmissionsEntry.COLUMN_SUBMISSION_ID+
         ") ON CONFLICT REPLACE);";

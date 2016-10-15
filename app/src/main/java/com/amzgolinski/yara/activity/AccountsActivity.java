@@ -47,11 +47,6 @@ public class AccountsActivity extends AppCompatActivity
 
   }
 
-  @OnClick(R.id.add_account)
-  public void deleteAccount(View view) {
-
-  }
-
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     Log.d(LOG_TAG, "onCreate");
@@ -70,7 +65,6 @@ public class AccountsActivity extends AppCompatActivity
 
   public void onAccountRetrieved(LoggedInAccount account) {
     Log.d(LOG_TAG, "onAccountRetrieved");
-    //mRedditAccount = account;
   }
 
   @Override

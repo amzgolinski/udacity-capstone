@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:id="@+id/widget_submission_item"
+              android:layout_marginTop="@dimen/widget_item_margin"
+              android:orientation="vertical"
+              android:padding="@dimen/widget_padding">
+
+  <TextView
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:id="@+id/widget_item_title"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:contentDescription="@string/appwidget_text"
+      tools:text="This is the title of the post"
+      android:textSize="14sp"
+      android:textStyle="bold|italic"/>
+
+  <TextView
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      android:id="@+id/widget_item_subreddit"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:layout_marginStart="8dp"
+      android:contentDescription="@string/appwidget_text"
+      tools:text="/r/aww"
+      android:textSize="12sp"/>
+
+</LinearLayout>

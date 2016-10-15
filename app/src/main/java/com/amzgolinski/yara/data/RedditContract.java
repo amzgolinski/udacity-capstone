@@ -70,11 +70,17 @@ public class RedditContract {
     public static final String COLUMN_COMMENT_COUNT  = "comment_count";
     public static final String COLUMN_THUMBNAIL      = "thumbnail";
     public static final String COLUMN_SCORE          = "score";
+    public static final String COLUMN_VOTE           = "vote";
     public static final String COLUMN_IS_READ_ONLY   = "read_only";
     public static final String COLUMN_TYPE           = "type";
 
     public static Uri buildSubmissionUri(long id) {
       return ContentUris.withAppendedId(CONTENT_URI, id);
+    }
+
+    public static Uri buildSubmissionUriWithSubredditId(long id) {
+      Uri submissionWithSubreddit = CONTENT_URI.buildUpon().appendPath("submission").build();
+      return ContentUris.withAppendedId(submissionWithSubreddit, id);
     }
 
   }

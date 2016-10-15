@@ -23,7 +23,7 @@
   <dimen name="submission_item_padding_bottom">4dp</dimen>
 
   <!-- submission detail -->
-  <dimen name="submission_detail_text_size">14sp</dimen>
+  <dimen name="submission_detail_text_size">12sp</dimen>
   <dimen name="submission_detail_padding_start">12dp</dimen>
   <dimen name="submission_detail_padding_top">8dp</dimen>
   <dimen name="submission_detail_padding_bottom">4dp</dimen>
@@ -31,5 +31,15 @@
   <!-- comment -->
   <dimen name="comment_text_size">12sp</dimen>
   <dimen name="comment_padding_top">8dp</dimen>
+
+  <!--
+Refer to App Widget Documentation for margin information
+http://developer.android.com/guide/topics/appwidgets/index.html#CreatingLayout
+    -->
+  <dimen name="widget_margin">8dp</dimen>
+  <dimen name="widget_padding">8dp</dimen>
+  <dimen name="widget_item_margin">8dp</dimen>
+  <dimen name="widget_empty_text_size">20sp</dimen>
+
 
 </resources>
