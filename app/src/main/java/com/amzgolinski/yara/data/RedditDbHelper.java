@@ -21,7 +21,6 @@ public class RedditDbHelper extends SQLiteOpenHelper {
   @Override
   public void onOpen(SQLiteDatabase sqLiteDatabase) {
 
-
     // Drop the Subreddits table
     sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RedditContract.SubredditsEntry.TABLE_NAME);
 
@@ -44,7 +43,6 @@ public class RedditDbHelper extends SQLiteOpenHelper {
         + RedditContract.CommentsEntry.TABLE_NAME + "'");
 
     onCreate(sqLiteDatabase);
-
   }
 
   @Override

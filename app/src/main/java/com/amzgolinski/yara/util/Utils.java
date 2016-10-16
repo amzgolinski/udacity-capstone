@@ -25,51 +25,18 @@ public class Utils {
   public static final int NOVOTE = 0;
   public static final int DOWNVOTE = -1;
 
-
-  public static void addUser(Context context, String username, String oauthToken) {
-    Log.d(LOG_TAG, "addUser");
-    Log.d(LOG_TAG, String.format("Username %s Token %s", username, oauthToken));
-    SharedPreferences prefs =
-        PreferenceManager.getDefaultSharedPreferences(context);
-
-    HashSet<String> users = Utils.getUserHashMap(context);
-
-    if (!users.contains(username)) {
-      users.add(username);
-      SharedPreferences.Editor editor = prefs.edit();
-      editor.putStringSet(context.getString(R.string.accounts_key), users);
-      editor.apply();
-    }
-
-    Utils.putOauthRefreshToken(context, username, oauthToken);
-    Utils.putCurrentUser(context, username);
-  }
-
   public static int convertDpToPixels(Context context, int dp) {
       return (int) (context.getResources().getDisplayMetrics().density * dp + 0.5f);
   }
 
-  public static void deleteUser(Context context, String username) {
-    Log.d(LOG_TAG, "deleteUser");
-    Log.d(LOG_TAG, String.format("Username %s ", username));
+  public static void logOutCurrentUser(Context context) {
+    Log.d(LOG_TAG, "logOutCurrentUser");
     SharedPreferences prefs =
         PreferenceManager.getDefaultSharedPreferences(context);
 
-    HashSet<String> users = Utils.getUserHashMap(context);
-    users.remove(username);
     SharedPreferences.Editor editor = prefs.edit();
-    editor.putStringSet(context.getString(R.string.accounts_key), users);
-    editor.remove(username);
+    editor.remove(context.getString(R.string.current_user_key));
     editor.apply();
-  }
-
-  public static String getCurrentUser(Context context) {
-    SharedPreferences prefs =
-        PreferenceManager.getDefaultSharedPreferences(context);
-
-    String user =  prefs.getString(context.getString(R.string.current_user_key), EMPTY_STRING);
-    Log.d(LOG_TAG, String.format("Username %s", user));
-    return user;
   }
 
   public static String getOauthRefreshToken(Context context, String username) {
@@ -80,21 +47,6 @@ public class Utils {
     String oauthToken =  prefs.getString(username, EMPTY_STRING);
     Log.d(LOG_TAG, String.format("Username %s\nToken %s ", username, oauthToken));
     return oauthToken;
-  }
-
-  public static HashSet<String> getUserHashMap(Context context) {
-    SharedPreferences prefs =
-        PreferenceManager.getDefaultSharedPreferences(context);
-
-    HashSet<String> users = (HashSet<String>) prefs.getStringSet(
-        context.getString(R.string.accounts_key),
-        new HashSet<String>()
-    );
-    return users;
-  }
-
-  public static ArrayList<String> getUsers(Context context) {
-    return new ArrayList<>(getUserHashMap(context));
   }
 
   public static VoteDirection getVote(int currentVote, int newVote) {
@@ -114,12 +66,16 @@ public class Utils {
     return (data == null || !data.moveToNext());
   }
 
-  public static boolean getLoginStatus(Context context) {
-
+  public static String getCurrentUser(Context context) {
     SharedPreferences prefs =
         PreferenceManager.getDefaultSharedPreferences(context);
+    String currentUser
+        = prefs.getString(context.getString(R.string.current_user_key), EMPTY_STRING);
+    return currentUser;
+  }
 
-    return prefs.getBoolean(context.getString(R.string.logged_in), false);
+  public static boolean isLoggedIn(Context context) {
+    return !Utils.getCurrentUser(context).equals(EMPTY_STRING);
   }
 
   public static boolean isMarkedNsfw(String toCheck) {
@@ -153,7 +109,8 @@ public class Utils {
     return Long.toString(id, 36);
   }
 
-  public static void putCurrentUser(Context context, String username) {
+  public static void setCurrentUser(Context context, String username) {
+    Log.d(LOG_TAG, "Current user: " + username);
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     SharedPreferences.Editor editor = prefs.edit();
     editor.putString(context.getString(R.string.current_user_key), username);
@@ -188,14 +145,6 @@ public class Utils {
     html = html.replace("</p>", "");
 
     return html;
-  }
-
-  public static void setLoginStatus(Context context, boolean status) {
-
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    SharedPreferences.Editor editor = prefs.edit();
-    editor.putBoolean(context.getString(R.string.logged_in), status);
-    editor.apply();
   }
 
 }

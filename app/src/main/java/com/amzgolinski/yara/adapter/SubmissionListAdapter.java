@@ -4,7 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,8 +25,10 @@ import com.amzgolinski.yara.callbacks.RedditDownloadCallback;
 import com.amzgolinski.yara.data.RedditContract;
 import com.amzgolinski.yara.service.YaraUtilityService;
 import com.amzgolinski.yara.tasks.SubmitVoteTask;
+import com.amzgolinski.yara.ui.SubmissionDetailFragment;
 import com.amzgolinski.yara.ui.SubmissionListFragment;
 import com.amzgolinski.yara.util.Utils;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.picasso.Picasso;
 
 import net.dean.jraw.models.VoteDirection;
@@ -35,7 +41,7 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
   // Store the context for easy access
   private Context mContext;
   private CursorAdapter mCursorAdapter;
-  private RedditDownloadCallback mCallback;
+  private FirebaseAnalytics mFirebaseAnalytics;
 
   private static int AD_TYPE = 1 ;
   private static int CONTENT_TYPE = 2 ;
@@ -43,7 +49,6 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
   public SubmissionListAdapter(Context context, Cursor cursor, RedditDownloadCallback callback) {
 
     mContext = context;
-    mCallback = callback;
     mCursorAdapter = new CursorAdapter(mContext, cursor, 0) {
 
       @Override
@@ -54,7 +59,7 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
 
       @Override
       public void bindView(View view, Context context, final Cursor cursor) {
-        //  Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
+        Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
         // subreddit name
         TextView submissionSubreddit = (TextView) view.findViewById(R.id.submission_item_subreddit);
         String subredditText = String.format(
@@ -62,6 +67,9 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
             cursor.getString(SubmissionListFragment.COL_SUBREDDIT_NAME)
         );
         submissionSubreddit.setText(subredditText);
+
+        TextView author = (TextView) view.findViewById(R.id.submission_item_author);
+        author.setText(cursor.getString(SubmissionListFragment.COL_AUTHOR));
 
         // submission title
         TextView submissionTitle = (TextView) view.findViewById(R.id.submission_item_title);
@@ -80,47 +88,52 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
         TextView submissionScore = (TextView) view.findViewById(R.id.submission_item_score);
         submissionScore.setText(cursor.getString(SubmissionListFragment.COL_SCORE));
 
-        String submissionId = Integer.toString(cursor.getInt(SubmissionListFragment.COL_SUBMISSION_ID));
+        String submissionId
+            = Integer.toString(cursor.getInt(SubmissionListFragment.COL_SUBMISSION_ID));
         int vote  = cursor.getInt(SubmissionListFragment.COL_VOTE);
+
         // up vote
         ImageView upArrowView = (ImageView) view.findViewById(R.id.submission_item_up_arrow);
-
-
+        Log.d(LOG_TAG, "VOTE: " + vote);
+        Drawable upArrow = context.getDrawable(R.drawable.ic_arrow_upward_black_24dp);
         if (vote == VoteDirection.UPVOTE.getValue()) {
-          upArrowView.setImageDrawable(
-              mContext.getResources().getDrawable(R.drawable.arrow_up_bold_circle_accent, null));
+          Log.d(LOG_TAG, "IN UPVOTE: " + vote);
+          upArrow.setTint(context.getColor(R.color.accent));
         } else {
-          upArrowView.setImageDrawable(
-              mContext.getResources().getDrawable(R.drawable.arrow_up_bold_circle_outline, null));
+          upArrow.setTint(context.getColor(R.color.black));
         }
+        upArrowView.setImageDrawable(upArrow);
         upArrowView.setTag(R.string.submission_id, submissionId);
         upArrowView.setTag(R.string.vote, vote);
         upArrowView.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
             long submissionId = Long.parseLong((String)v.getTag(R.string.submission_id));
-            int vote = Integer.parseInt((String)v.getTag(R.string.vote));
+            int vote = (Integer) v.getTag(R.string.vote);
             YaraUtilityService.submitVote(mContext, submissionId, vote, Utils.UPVOTE);
+            logVote(submissionId, vote);
           }
         });
 
         // down vote
         ImageView downArrowView = (ImageView) view.findViewById(R.id.submission_item_down_arrow);
+        Drawable downArrow = context.getDrawable(R.drawable.ic_arrow_downward_black_24dp);
         if (vote == VoteDirection.DOWNVOTE.getValue()) {
-          downArrowView.setImageDrawable(
-              mContext.getResources().getDrawable(R.drawable.arrow_down_bold_circle_accent, null));
+          Log.d(LOG_TAG, "IN DOWNVOTE: " + vote);
+          downArrow.setTint(context.getColor(R.color.accent));
         } else {
-          downArrowView.setImageDrawable(
-              mContext.getResources().getDrawable(R.drawable.arrow_down_bold_circle_outline, null));
+          downArrow.setTint(context.getColor(R.color.black));
         }
+        downArrowView.setImageDrawable(downArrow);
         downArrowView.setTag(R.string.submission_id, submissionId);
         downArrowView.setTag(R.string.vote, vote);
         downArrowView.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
             long submissionId = Long.parseLong((String)v.getTag(R.string.submission_id));
-            int vote = Integer.parseInt((String)v.getTag(R.string.vote));
+            int vote = (Integer) v.getTag(R.string.vote);
             YaraUtilityService.submitVote(mContext, submissionId, vote, Utils.DOWNVOTE);
+            logVote(submissionId, vote);
           }
         });
 
@@ -140,6 +153,13 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
               mContext.getResources().getDrawable(R.drawable.ic_comment_white_36dp, null)
           );
         }
+      }
+
+      private void logVote(long submissionId, int direction) {
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, Long.toString(submissionId));
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, Integer.toString(direction));
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
       }
     };
   }

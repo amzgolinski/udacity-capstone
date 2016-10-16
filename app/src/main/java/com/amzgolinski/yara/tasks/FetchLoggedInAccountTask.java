@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.amzgolinski.yara.callbacks.AccountRetrievedCallback;
+import com.amzgolinski.yara.util.Utils;
 
 import net.dean.jraw.auth.AuthenticationManager;
 import net.dean.jraw.models.LoggedInAccount;
@@ -29,6 +30,7 @@ public class FetchLoggedInAccountTask extends AsyncTask<Void, Void, LoggedInAcco
   @Override
   protected void onPostExecute(LoggedInAccount account) {
     Log.d(LOG_TAG, "Retrieved Valid user");
+    Utils.setCurrentUser(mContext, account.getFullName());
     mCallback.onAccountRetrieved(account);
   }
 

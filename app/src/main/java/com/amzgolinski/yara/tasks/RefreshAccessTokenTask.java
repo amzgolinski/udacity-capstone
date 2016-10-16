@@ -32,7 +32,6 @@ public class RefreshAccessTokenTask extends AsyncTask<Void, Void, LoggedInAccoun
       AuthenticationManager.get().refreshAccessToken(YaraApplication.CREDENTIALS);
       String user = AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
       String token = AuthenticationManager.get().getRedditClient().getOAuthHelper().getRefreshToken();
-      Utils.addUser(mContext, user, token);
       return AuthenticationManager.get().getRedditClient().me();
     } catch (NoSuchTokenException | OAuthException e) {
       Log.e(LOG_TAG, "Could not refresh access token", e);

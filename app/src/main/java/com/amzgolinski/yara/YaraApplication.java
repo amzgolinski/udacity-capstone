@@ -22,7 +22,7 @@ public class YaraApplication extends Application {
   public void onCreate() {
     super.onCreate();
     RedditClient reddit = new AndroidRedditClient(this);
-    reddit.setLoggingMode(LoggingMode.ALWAYS);
+    reddit.setLoggingMode(LoggingMode.NEVER);
     AuthenticationManager.get().init(
       reddit,
       new RefreshTokenHandler(new AndroidTokenStore(this), reddit));

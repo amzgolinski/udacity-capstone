@@ -90,7 +90,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
 
       if (mAccounts.size() >= 1) {
         String newUser = mAccounts.get(0);
-        Utils.putCurrentUser(mContext, newUser);
+        //Utils.putCurrentUser(mContext, newUser);
         String oauthToken = Utils.getOauthRefreshToken(mContext, newUser);
         new SetRefreshTokenTask().execute(oauthToken);
 
@@ -98,7 +98,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
 
     }
 
-    Utils.deleteUser(mContext, user);
+    Utils.logOutCurrentUser(mContext);
     this.notifyDataSetChanged();
   }
 
@@ -161,7 +161,7 @@ public class AccountsAdapter extends RecyclerView.Adapter<AccountsAdapter.ViewHo
       if (pos != RecyclerView.NO_POSITION) {
         String newUser = mAccounts.get(pos);
         Log.d(LOG_TAG, "User: " + newUser);
-        Utils.putCurrentUser(mContext, newUser);
+        //tils.putCurrentUser(mContext, newUser);
         String oauthToken = Utils.getOauthRefreshToken(mContext, newUser);
         new SetRefreshTokenTask().execute(oauthToken);
         // We can access the data within the views

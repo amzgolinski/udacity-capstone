@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -23,7 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-
+import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.adapter.CommentsAdapter;
@@ -55,9 +54,12 @@ public class SubmissionDetailFragment extends Fragment
       RedditContract.SubmissionsEntry.COLUMN_SUBREDDIT_NAME,
       RedditContract.SubmissionsEntry.COLUMN_TITLE,
       RedditContract.SubmissionsEntry.COLUMN_TEXT,
+      RedditContract.SubmissionsEntry.COLUMN_URL,
       RedditContract.SubmissionsEntry.COLUMN_THUMBNAIL,
       RedditContract.SubmissionsEntry.COLUMN_COMMENT_COUNT,
       RedditContract.SubmissionsEntry.COLUMN_SCORE,
+      RedditContract.SubmissionsEntry.COLUMN_VOTE,
+      RedditContract.SubmissionsEntry.COLUMN_AUTHOR,
   };
 
   public static final int COL_ID = 0;
@@ -66,16 +68,20 @@ public class SubmissionDetailFragment extends Fragment
   public static final int COL_SUBREDDIT_NAME = 3;
   public static final int COL_TITLE = 4;
   public static final int COL_TEXT = 5;
-  public static final int COL_THUMBNAIL = 6;
-  public static final int COL_COMMENT_COUNT = 7;
-  public static final int COL_SCORE = 8;
+  public static final int COL_URL = 6;
+  public static final int COL_THUMBNAIL = 7;
+  public static final int COL_COMMENT_COUNT = 8;
+  public static final int COL_SCORE = 9;
+  public static final int COL_VOTE = 10;
+  public static final int COL_AUTHOR = 11;
 
   private Uri mSubmissionUri;
   private MergeAdapter mMergeAdapter;
   private SubmissionDetailAdapter mSubmissionAdapter;
   private CommentsAdapter mCommentsAdapter;
   private ArrayList<CommentItem> mComments;
-  private BroadcastReceiver mLoadMoreCommentsReceiver;
+  private BroadcastReceiver mReciever;
+  private String mUrl;
 
   public SubmissionDetailFragment() {
     // empty
@@ -88,16 +94,23 @@ public class SubmissionDetailFragment extends Fragment
     getLoaderManager().initLoader(SUBMISSION_LOADER_ID, null, this);
     mSubmissionUri = getActivity().getIntent().getData();
     String id = Utils.longToRedditId(ContentUris.parseId(mSubmissionUri));
-    mLoadMoreCommentsReceiver =  new BroadcastReceiver() {
+    new FetchCommentsTask(this.getContext(), this).execute(id);
+    mReciever =  new BroadcastReceiver() {
       @Override
       public void onReceive(Context context, Intent intent) {
-        final ArrayList comments =
-            intent.getParcelableArrayListExtra(YaraUtilityService.PARAM_COMMENTS);
-        mCommentsAdapter.reloadComments(comments);
-        //restartLoader();
+
+        if (intent.getAction().equals(YaraUtilityService.ACTION_SUBMIT_VOTE)) {
+          Log.d(LOG_TAG, "SUBMIT VOTE");
+          restartLoader();
+
+        } else if (intent.getAction().equals(YaraUtilityService.ACTION_LOAD_MORE_COMMENTS)) {
+          final ArrayList comments =
+              intent.getParcelableArrayListExtra(YaraUtilityService.PARAM_COMMENTS);
+          mCommentsAdapter.reloadComments(comments);
+        }
       }
     };
-    new FetchCommentsTask(this.getContext(), this).execute(id);
+
   }
 
   @Override
@@ -127,16 +140,17 @@ public class SubmissionDetailFragment extends Fragment
     mMergeAdapter = new MergeAdapter();
     mMergeAdapter.addAdapter(mSubmissionAdapter);
     mMergeAdapter.addAdapter(mCommentsAdapter);
+
     ListView commentsView = (ListView) root.findViewById(R.id.submission_detail_listview);
     commentsView.setAdapter(mMergeAdapter);
     commentsView.setEmptyView(root.findViewById(R.id.empty));
+
     return root;
   }
 
   @Override
   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     inflater.inflate(R.menu.menu_submission_detail_fragment, menu);
-    finishCreatingMenu(menu);
   }
 
   @Override
@@ -156,12 +170,8 @@ public class SubmissionDetailFragment extends Fragment
   @Override
   public void onLoaderReset(Loader<Cursor> loader) {
     Log.d(LOG_TAG, "onLoaderReset");
-    switch (loader.getId()) {
+    mSubmissionAdapter.swapCursor(null);
 
-      case (SUBMISSION_LOADER_ID):
-        mSubmissionAdapter.swapCursor(null);
-        break;
-    }
   }
 
   @Override
@@ -169,11 +179,39 @@ public class SubmissionDetailFragment extends Fragment
 
     Log.d(LOG_TAG, "onLoadFinished");
     Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(data));
-    switch (loader.getId()) {
-      case SUBMISSION_LOADER_ID: {
-        mSubmissionAdapter.swapCursor(data);
-        break;
-      }
+
+    if (data.moveToNext()) {
+      mUrl = data.getString(COL_URL);
+    }
+
+    //mMergeAdapter.notifyDataSetChanged();
+    //mSubmissionAdapter.notifyDataSetChanged();
+    mSubmissionAdapter.swapCursor(data);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    Log.d(LOG_TAG, "onOptionsItemSelected");
+    // Handle item selection
+    switch (item.getItemId()) {
+      case R.id.action_share:
+        Toast.makeText(getContext(), "Share", Toast.LENGTH_SHORT).show();
+
+        startActivity(Intent.createChooser(
+            createShareSubmissionIntent(),
+            getContext().getResources().getString(R.string.share_text))
+        );
+        return true;
+
+      case R.id.action_refresh:
+        Toast.makeText(getContext(), "Refresh", Toast.LENGTH_SHORT).show();
+        restartLoader();
+        mCommentsAdapter.setComments(new ArrayList<CommentItem>());
+        String id = Utils.longToRedditId(ContentUris.parseId(mSubmissionUri));
+        new FetchCommentsTask(this.getContext(), this).execute(id);
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
     }
   }
 
@@ -182,7 +220,8 @@ public class SubmissionDetailFragment extends Fragment
     Log.d(LOG_TAG, "onPause");
     super.onPause();
 
-    LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mLoadMoreCommentsReceiver);
+    LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mReciever);
+
   }
 
   @Override
@@ -191,7 +230,10 @@ public class SubmissionDetailFragment extends Fragment
     super.onResume();
 
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(
-        mLoadMoreCommentsReceiver, new IntentFilter(YaraUtilityService.ACTION_LOAD_MORE_COMMENTS));
+        mReciever, new IntentFilter(YaraUtilityService.ACTION_LOAD_MORE_COMMENTS));
+
+    LocalBroadcastManager.getInstance(getContext()).registerReceiver(
+        mReciever, new IntentFilter(YaraUtilityService.ACTION_SUBMIT_VOTE));
   }
 
   @Override
@@ -201,17 +243,11 @@ public class SubmissionDetailFragment extends Fragment
   }
 
   private Intent createShareSubmissionIntent() {
-    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-    shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-    shareIntent.setType("text/plain");
-    shareIntent.putExtra(Intent.EXTRA_TEXT, "This is my share");
-    return shareIntent;
-  }
-
-  private void finishCreatingMenu(Menu menu) {
-    // Retrieve the share menu item
-    MenuItem menuItem = menu.findItem(R.id.action_share);
-    menuItem.setIntent(createShareSubmissionIntent());
+    Intent sendIntent = new Intent();
+    sendIntent.setAction(Intent.ACTION_SEND);
+    sendIntent.putExtra(Intent.EXTRA_TEXT, mUrl);
+    sendIntent.setType("text/plain");
+    return sendIntent;
   }
 
   private CursorLoader getCursorLoader(Uri uri, String[] columns) {
@@ -223,5 +259,11 @@ public class SubmissionDetailFragment extends Fragment
         null,
         null
     );
+  }
+
+  private void restartLoader() {
+    if (isAdded()) {
+      getLoaderManager().restartLoader(SUBMISSION_LOADER_ID, null, this);
+    }
   }
 }

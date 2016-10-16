@@ -54,7 +54,7 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
     while (paginator.hasNext()) {
       Listing<Subreddit> subreddits = paginator.next();
       for (Subreddit subreddit : subreddits) {
-        Log.d(LOG_TAG, "Subreddit " + subreddit.toString());
+        //Log.d(LOG_TAG, "Subreddit " + subreddit.toString());
         if (!subreddit.isNsfw() && subreddit.isUserSubscriber()) {
           latestSubreddits.put(subreddit.getId(), subreddit);
         }
@@ -88,7 +88,7 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
 
       ArrayList<Submission> toAdd = new ArrayList<>();
       for (Submission submission : submissions) {
-        //Log.d(LOG_TAG, submission.toString());
+        Log.d(LOG_TAG, submission.toString());
         if (Utils.isValidSubmission(submission)) {
           toAdd.add(submission);
         }
@@ -103,11 +103,8 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
   public void onPostExecute(HashMap<String, Subreddit> result) {
     Log.d(LOG_TAG, "onPostExecute");
     Intent dataUpdated = new Intent();
-    dataUpdated.setAction("your.package.name.MANUAL_UPDATE");
-
-    //LocalBroadcastManager.getInstance(mContext).sendBroadcast(dataUpdated);
+    dataUpdated.setAction("com.amzgolinski.yara.widget.MANUAL_UPDATE");
     mContext.sendBroadcast(dataUpdated);
-    //Log.d(LOG_TAG, "sentBroadcast");
     mCallback.onDownloadComplete(result);
   }
 
@@ -117,10 +114,8 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
     Vector<ContentValues> contentValuesVector = new Vector<>(submissions.size());
     for (Submission submission : submissions) {
       ContentValues submissionValues = submissionToValue(submission);
-      Log.d(LOG_TAG, "Submission Values: " + submissionValues.toString());
       contentValuesVector.add(submissionValues);
       mContext.getContentResolver().insert(SubmissionsEntry.CONTENT_URI, submissionValues);
-
     }
 
     ContentValues[] contentValuesArray = new ContentValues[contentValuesVector.size()];
@@ -162,7 +157,6 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
     toReturn.put(SubredditsEntry.COLUMN_RELATIVE_LOCATION, subreddit.getRelativeLocation());
     toReturn.put(SubredditsEntry.COLUMN_TITLE, subreddit.getTitle());
     toReturn.put(SubredditsEntry.COLUMN_SELECTED, "1");
-
     return toReturn;
   }
 
@@ -185,14 +179,12 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
     int readOnly = (Utils.isSubmissionReadOnly(submission) ? 1 : 0);
     toReturn.put(SubmissionsEntry.COLUMN_IS_READ_ONLY, readOnly);
     toReturn.put(SubmissionsEntry.COLUMN_THUMBNAIL, submission.getThumbnail());
+
     String selfText = submission.data("selftext_html");
     if (!Utils.isStringEmpty(selfText)) {
       selfText = StringEscapeUtils.unescapeHtml4(selfText);
-      Log.d(LOG_TAG, "SELF " + selfText);
       selfText = Utils.removeHtmlSpacing(selfText);
-      Log.d(LOG_TAG, "SELF " + selfText);
     }
-
     toReturn.put(SubmissionsEntry.COLUMN_TEXT, selfText);
     toReturn.put(SubmissionsEntry.COLUMN_VOTE, submission.getVote().getValue());
 

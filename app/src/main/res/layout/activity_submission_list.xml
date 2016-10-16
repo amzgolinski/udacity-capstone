@@ -12,6 +12,16 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"/>
 
+  <TextView
+      android:id="@+id/no_accounts"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:gravity="center"
+      android:padding="@dimen/activity_horizontal_margin"
+      android:textAlignment="center"
+      android:text="hello"
+      android:visibility="gone"/>
+
   <android.support.design.widget.NavigationView
       android:id="@+id/navigation_view"
       android:layout_width="wrap_content"

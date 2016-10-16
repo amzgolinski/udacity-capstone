@@ -30,6 +30,7 @@
 
     </FrameLayout>
 
+
     <TextView
         android:id="@+id/submission_item_subreddit"
         style="@style/submission_item_subreddit"
@@ -37,6 +38,15 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/thumbnail_container"
         android:text="/r/LifeProTips"/>
+
+    <TextView
+        android:id="@+id/submission_item_author"
+        style="@style/submission_item_subreddit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/submission_item_subreddit"
+        android:textStyle="italic"
+        android:text="capstone_test"/>
 
     <TextView
         android:id="@+id/submission_item_title"
@@ -55,10 +65,20 @@
       android:layout_marginTop="8dp"
       android:layout_height="36dp">
 
+    <ImageView
+        android:id="@+id/submission_item_icon_comment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="71dp"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/ic_comment_black_24dp"
+        android:tag="1"/>
+
     <TextView
         android:id="@+id/submission_item_comments"
         style="@style/submission_item_comments"
         android:layout_width="wrap_content"
+        android:layout_toEndOf="@+id/submission_item_icon_comment"
         android:layout_height="wrap_content"
         android:paddingTop="4dp"
         android:text="12345 comments"/>
@@ -76,15 +96,15 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:paddingStart="4dp"
-          android:src="@drawable/arrow_up_bold_circle_outline"
-          android:tag="1"/>
+          android:layout_gravity="center_vertical"
+          android:src="@drawable/ic_arrow_upward_black_24dp"/>
 
       <TextView
           android:id="@+id/submission_item_score"
           style="@style/submission_item_score"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:paddingTop="4dp"
+          android:layout_gravity="center_vertical"
           android:paddingStart="4dp"
           android:text="78907"/>
 
@@ -92,9 +112,9 @@
           android:id="@+id/submission_item_down_arrow"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:paddingStart="2dp"
-          android:src="@drawable/arrow_down_bold_circle_outline"
-          android:tag="-1"/>
+          android:layout_gravity="center_vertical"
+          android:paddingStart="4dp"
+          android:src="@drawable/ic_arrow_downward_black_24dp"/>
     </LinearLayout>
   </RelativeLayout>
 

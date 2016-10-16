@@ -148,8 +148,8 @@ public class SubredditFragment extends Fragment
         Toast.makeText(getContext(), "Remove " + toRemove.size(), Toast.LENGTH_SHORT).show();
         if (toRemove.size() > 0) {
           YaraUtilityService.subredditUnsubscribe(getContext(), toRemove);
+          getActivity().onBackPressed();
         }
-        getActivity().onBackPressed();
         return true;
       default:
         return super.onOptionsItemSelected(item);

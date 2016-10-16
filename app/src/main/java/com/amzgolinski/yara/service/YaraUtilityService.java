@@ -147,20 +147,25 @@ public class YaraUtilityService extends IntentService {
   }
 
   private void handleDeleteAccount() {
+    Log.d(LOG_TAG, "handleDeleteAccount");
+    Intent result = new Intent(ACTION_DELETE_ACCOUNT);
 
-    AuthenticationManager.get()
-        .getRedditClient()
-        .getOAuthHelper()
-        .revokeAccessToken(YaraApplication.CREDENTIALS);
+      AuthenticationManager.get()
+          .getRedditClient()
+          .getOAuthHelper()
+          .revokeAccessToken(YaraApplication.CREDENTIALS);
+      AuthenticationManager.get().getRedditClient().deauthenticate();
 
-    int numDeleted = this.getContentResolver()
-        .delete(RedditContract.SubmissionsEntry.CONTENT_URI, null, null);
-    Log.d(LOG_TAG, "Deleted " + numDeleted);
+      int numDeleted = this.getContentResolver()
+          .delete(RedditContract.SubmissionsEntry.CONTENT_URI, null, null);
+      Log.d(LOG_TAG, "Deleted " + numDeleted);
 
-    numDeleted = this.getContentResolver()
-        .delete(RedditContract.SubredditsEntry.CONTENT_URI, null, null);
-    Log.d(LOG_TAG, "Deleted " + numDeleted);
+      numDeleted = this.getContentResolver()
+          .delete(RedditContract.SubredditsEntry.CONTENT_URI, null, null);
+      Log.d(LOG_TAG, "Deleted " + numDeleted);
+      Utils.logOutCurrentUser(getApplicationContext());
 
+    broadcastResult(result, true);
   }
 
   private void handleLoadMoreComments(ArrayList<CommentItem> comments, int position) {
@@ -182,11 +187,13 @@ public class YaraUtilityService extends IntentService {
     Log.d(LOG_TAG, "Size is: " + Integer.toString(comments.size()));
 
     result.putExtra(PARAM_COMMENTS, comments);
-    this.broadcastResult(result, true);
+    broadcastResult(result, true);
   }
 
   private void handleSubmitComment(long submissionId, String commentText) {
     Log.d(LOG_TAG, "handleSubmitComment");
+    Intent result = new Intent(ACTION_SUBMIT_COMMENT);
+    boolean status = true;
 
     String id = Utils.longToRedditId(submissionId); // converting long to Reddit ID
     RedditClient reddit = AuthenticationManager.get().getRedditClient();
@@ -195,18 +202,20 @@ public class YaraUtilityService extends IntentService {
     try {
       YaraContribution contrib = new YaraContribution(id);
       new AccountManager(reddit).reply(contrib, commentText);
+      Submission updated = reddit.getSubmission(id);
+      updateCommentCount(updated);
     } catch (NetworkException | ApiException exception) {
       Log.d(LOG_TAG, exception.toString());
+      status = false;
     }
 
-    Intent result = new Intent(ACTION_SUBMIT_COMMENT);
-    broadcastResult(result, true);
+    broadcastResult(result, status);
   }
 
   private void handleSubmitVote(long submissionId, int currentVote, int newVote) {
 
     Intent result = new Intent(ACTION_SUBMIT_VOTE);
-
+    boolean status = true;
     VoteDirection direction = Utils.getVote(currentVote, newVote);
 
     RedditClient reddit = AuthenticationManager.get().getRedditClient();
@@ -218,20 +227,18 @@ public class YaraUtilityService extends IntentService {
       new AccountManager(reddit).vote(submission, direction);
       Submission updated = reddit.getSubmission(submission.getId());
       Log.d(LOG_TAG, updated.toString());
-      int numupdated = updateSubmission(updated);
-      Log.d(LOG_TAG, "NUM UPDATED: " + numupdated);
-
+      updateScore(updated);
     } catch (NetworkException | ApiException exception) {
       Log.d(LOG_TAG, exception.getMessage());
+      status = false;
     }
-
-    this.broadcastResult(result, true);
+    broadcastResult(result, status);
   }
 
   private void handleUnsubscribeSubreddit(ArrayList<String> subreddits) {
 
     Intent result = new Intent(ACTION_SUBREDDIT_UNSUBSCRIBE);
-
+    boolean status = true;
     RedditClient reddit = AuthenticationManager.get().getRedditClient();
 
     for (String subredditName : subreddits) {
@@ -242,11 +249,10 @@ public class YaraUtilityService extends IntentService {
         this.deleteSubreddit(subreddit.getId());
       } catch (NetworkException exception) {
         Log.d(LOG_TAG, exception.getMessage());
+        status = false;
       }
     }
-
-    this.broadcastResult(result, true);
-
+    this.broadcastResult(result, status);
   }
 
   private void deleteSubreddit(String subredditId) {
@@ -301,10 +307,24 @@ public class YaraUtilityService extends IntentService {
     return inList;
   }
 
-  private int updateSubmission(Submission submission) {
+  private int updateScore(Submission submission) {
     ContentValues values = new ContentValues();
     values.put(RedditContract.SubmissionsEntry.COLUMN_VOTE, submission.getVote().getValue());
     values.put(RedditContract.SubmissionsEntry.COLUMN_SCORE, submission.getScore());
+
+    long id = Utils.redditIdToLong(submission.getId());
+    Uri submissionUri = RedditContract.SubmissionsEntry.buildSubmissionUri(id);
+    int numUpdated = this.getContentResolver().update(
+        submissionUri,
+        values,
+        RedditContract.SubmissionsEntry.COLUMN_SUBMISSION_ID + " =  ? ",
+        new String[]{submission.getId()});
+    return numUpdated;
+  }
+
+  private int updateCommentCount(Submission submission) {
+    ContentValues values = new ContentValues();
+    values.put(RedditContract.SubmissionsEntry.COLUMN_COMMENT_COUNT, submission.getCommentCount());
 
     long id = Utils.redditIdToLong(submission.getId());
     Uri submissionUri = RedditContract.SubmissionsEntry.buildSubmissionUri(id);

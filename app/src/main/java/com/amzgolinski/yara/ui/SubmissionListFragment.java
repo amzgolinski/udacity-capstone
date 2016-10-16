@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
@@ -34,6 +35,7 @@ import com.amzgolinski.yara.util.Utils;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -53,6 +55,7 @@ public class SubmissionListFragment extends Fragment
       RedditContract.SubmissionsEntry.COLUMN_SUBREDDIT_NAME,
       RedditContract.SubmissionsEntry.COLUMN_TITLE,
       RedditContract.SubmissionsEntry.COLUMN_TEXT,
+      RedditContract.SubmissionsEntry.COLUMN_AUTHOR,
       RedditContract.SubmissionsEntry.COLUMN_THUMBNAIL,
       RedditContract.SubmissionsEntry.COLUMN_COMMENT_COUNT,
       RedditContract.SubmissionsEntry.COLUMN_SCORE,
@@ -65,10 +68,11 @@ public class SubmissionListFragment extends Fragment
   public static final int COL_SUBREDDIT_NAME = 3;
   public static final int COL_TITLE = 4;
   public static final int COL_TEXT = 5;
-  public static final int COL_THUMBNAIL = 6;
-  public static final int COL_COMMENT_COUNT = 7;
-  public static final int COL_SCORE = 8;
-  public static final int COL_VOTE = 9;
+  public static final int COL_AUTHOR = 6;
+  public static final int COL_THUMBNAIL = 7;
+  public static final int COL_COMMENT_COUNT = 8;
+  public static final int COL_SCORE = 9;
+  public static final int COL_VOTE = 10;
 
   // Views
   @BindView(R.id.submission_list_progress_bar_layout) ViewGroup mProgress;
@@ -76,6 +80,7 @@ public class SubmissionListFragment extends Fragment
 
   private SubmissionListAdapter mAdapter;
   private BroadcastReceiver mReceiver;
+
 
   public SubmissionListFragment() {
     // empty
@@ -140,12 +145,11 @@ public class SubmissionListFragment extends Fragment
     submissionsList.setAdapter(mAdapter);
     mProgress.setVisibility(View.VISIBLE);
 
-    /*
     MobileAds.initialize(getContext(), "ca-app-pub-3940256099942544~3347511713");
     AdView mAdView = (AdView) root.findViewById(R.id.ad_view);
     AdRequest adRequest = new AdRequest.Builder().build();
     mAdView.loadAd(adRequest);
-    */
+
     return root;
   }
 
@@ -153,8 +157,8 @@ public class SubmissionListFragment extends Fragment
   public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
     Log.d(LOG_TAG, "onLoadFinished");
     //Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(data));
-
-    if (Utils.isCursorEmpty(data) && Utils.getLoginStatus(getContext()) == true) {
+    Log.d(LOG_TAG, "Logged in: " + Utils.isLoggedIn(getContext()));
+    if (Utils.isCursorEmpty(data) && Utils.isLoggedIn(getContext())) {
       fetchSubreddits();
     } else {
       mProgress.setVisibility(View.GONE);
@@ -180,6 +184,7 @@ public class SubmissionListFragment extends Fragment
     Log.d(LOG_TAG, "onResume");
     getLoaderManager().restartLoader(SUBMISSIONS_LOADER, null, this);
     super.onResume();
+
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(
         mReceiver, new IntentFilter(YaraUtilityService.ACTION_SUBMIT_VOTE));
 
@@ -210,4 +215,6 @@ public class SubmissionListFragment extends Fragment
       getLoaderManager().restartLoader(SUBMISSIONS_LOADER, null, this);
     }
   }
+
+
 }

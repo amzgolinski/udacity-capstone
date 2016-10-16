@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.webkit.CookieManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,12 +20,14 @@ import com.amzgolinski.yara.callbacks.AccountRetrievedCallback;
 import com.amzgolinski.yara.tasks.FetchLoggedInAccountTask;
 import com.amzgolinski.yara.tasks.RefreshAccessTokenTask;
 import com.amzgolinski.yara.util.Utils;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import net.dean.jraw.auth.AuthenticationManager;
 import net.dean.jraw.auth.AuthenticationState;
 import net.dean.jraw.models.LoggedInAccount;
 
-import butterknife.OnClick;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class SubmissionListActivity extends AppCompatActivity
     implements NavigationView.OnNavigationItemSelectedListener, AccountRetrievedCallback {
@@ -35,15 +36,15 @@ public class SubmissionListActivity extends AppCompatActivity
   private static final String LOG_TAG = SubmissionListActivity.class.getName();
 
   private DrawerLayout mDrawerLayout;
-  private LoggedInAccount mRedditAccount;
-  private TextView mUsername;
+  @BindView(R.id.no_accounts) TextView mEmpty;
+  private FirebaseAnalytics mFirebaseAnalytics;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     Log.d(LOG_TAG, "onCreate");
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_submission_list);
-
+    ButterKnife.bind(this);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
 
@@ -82,14 +83,9 @@ public class SubmissionListActivity extends AppCompatActivity
     //calling sync state is necessary or else your hamburger icon wont show up
     actionBarDrawerToggle.syncState();
 
+    // Firebase analytics
+    mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
   }
-
-
-
-  /*
-  @OnClick(R.id.login_button)
-  public void login(View view) {startActivity(new Intent(this, LoginActivity.class));}
-  */
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
@@ -141,22 +137,24 @@ public class SubmissionListActivity extends AppCompatActivity
     AuthenticationState state = AuthenticationManager.get().checkAuthState();
     Log.d(LOG_TAG, "AuthenticationState for onResume(): " + state);
 
-    switch (state) {
-      case READY:
-        setNavigationDrawerUser();
-        Utils.setLoginStatus(this, true);
-        break;
-      case NEED_REFRESH:
-        Utils.setLoginStatus(this, true);
-        new RefreshAccessTokenTask(this.getApplicationContext(), this).execute();
-        break;
-      case NONE:
-        Utils.setLoginStatus(this, false);
-        Toast.makeText(SubmissionListActivity.this, "Log in first", Toast.LENGTH_SHORT).show();
-        CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.removeAllCookie();
-        startActivity(new Intent(this, LoginActivity.class));
-        break;
+    if (Utils.isLoggedIn(getApplicationContext())) {
+      switch (state) {
+        case READY:
+          Log.d(LOG_TAG, state.toString());
+          new FetchLoggedInAccountTask(this.getApplicationContext(), this).execute();
+          break;
+        case NEED_REFRESH:
+          Log.d(LOG_TAG, state.toString());
+          new RefreshAccessTokenTask(this.getApplicationContext(), this).execute();
+          break;
+        case NONE:
+          Log.d(LOG_TAG, state.toString());
+          Toast.makeText(SubmissionListActivity.this, "Log in first", Toast.LENGTH_SHORT).show();
+          break;
+      }
+    } else {
+      mEmpty.setText("Please add an account");
+      mEmpty.setVisibility(View.VISIBLE);
     }
   }
 
@@ -178,22 +176,24 @@ public class SubmissionListActivity extends AppCompatActivity
 
   public void onAccountRetrieved(LoggedInAccount account) {
     Log.d(LOG_TAG, "onAccountRetrieved");
-    mRedditAccount = account;
-    setNavigationDrawerUser();
+    configureUser(account);
   }
 
-  private void setNavigationDrawerUser() {
+  private void configureUser(LoggedInAccount account) {
 
-    Log.d(LOG_TAG, "configUser");
+    Log.d(LOG_TAG, "setNavigationDrawerUser");
+    Utils.setCurrentUser(this, account.getFullName());
+    /*
     if (mRedditAccount == null) {
       new FetchLoggedInAccountTask(this.getApplicationContext(), this).execute();
       return;
     }
+    */
     NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
     navigationView.setNavigationItemSelectedListener(this);
     View header = navigationView.getHeaderView(0);
-    mUsername = (TextView) header.findViewById(R.id.reddit_username);
-    mUsername.setText(mRedditAccount.getFullName());
+    TextView username = (TextView) header.findViewById(R.id.reddit_username);
+    username.setText(account.getFullName());
 
   }
 }

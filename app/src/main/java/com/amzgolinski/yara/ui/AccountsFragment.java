@@ -1,28 +1,73 @@
 package com.amzgolinski.yara.ui;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.amzgolinski.yara.R;
-import com.amzgolinski.yara.adapter.AccountsAdapter;
+import com.amzgolinski.yara.activity.LoginActivity;
+import com.amzgolinski.yara.service.YaraUtilityService;
 import com.amzgolinski.yara.util.Utils;
 
-import java.util.ArrayList;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class AccountsFragment extends Fragment {
 
   private static final String LOG_TAG = AccountsFragment.class.getName();
 
-  private AccountsAdapter mAccountsAdapter;
+  @BindView(R.id.account_name) TextView mAccountName;
+  @BindView(R.id.delete_account_button) ImageButton mDeleteButton;
+  @BindView(R.id.divider) View mDivider;
+  @BindView(R.id.account_image) ImageView mImageView;
+  @BindView(R.id.add_account_button) ImageButton mAddAccountButton;
+  @BindView(R.id.add_account_title) TextView mAddAccountTitle;
+
+  private String mUsername;
+  private BroadcastReceiver mReceiver;
 
   public AccountsFragment() {
     // empty
+  }
+
+  @Override
+  public void onActivityCreated(Bundle savedInstanceState) {
+    Log.d(LOG_TAG, "onActivityCreated");
+    super.onActivityCreated(savedInstanceState);
+    mReceiver = new BroadcastReceiver() {
+
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        getActivity().onBackPressed();
+      }
+    };
+  }
+
+  @Override
+  public void onPause() {
+    Log.d(LOG_TAG, "onPause");
+    super.onPause();
+    LocalBroadcastManager.getInstance(getContext()).unregisterReceiver((mReceiver));
+  }
+
+  @Override
+  public void onResume() {
+    Log.d(LOG_TAG, "onResume");
+    super.onResume();
+    LocalBroadcastManager.getInstance(getContext()).registerReceiver(
+        mReceiver, new IntentFilter(YaraUtilityService.ACTION_DELETE_ACCOUNT));
   }
 
   @Override
@@ -30,27 +75,44 @@ public class AccountsFragment extends Fragment {
                            Bundle savedInstanceState) {
 
     View root = inflater.inflate(R.layout.fragment_accounts, container, false);
-
-    // Lookup the recyclerview in activity layout
-    RecyclerView accountsView = (RecyclerView) root.findViewById(R.id.accounts);
-
-    RecyclerView.ItemDecoration itemDecoration = new
-        DividerItemDecoration(this.getContext(), DividerItemDecoration.VERTICAL_LIST);
-    accountsView.addItemDecoration(itemDecoration);
-
-    ArrayList<String> list = Utils.getUsers(this.getContext());
-    Log.d(LOG_TAG, list.toString());
-
-    // Create adapter passing in the sample user data
-    mAccountsAdapter = new AccountsAdapter(this.getContext(), list);
-
-    // Attach the adapter to the recyclerview to populate items
-    accountsView.setAdapter(mAccountsAdapter);
-
-    // Set layout manager to position the items
-    accountsView.setLayoutManager(new LinearLayoutManager(this.getContext()));
-
+    ButterKnife.bind(this, root);
     return root;
+  }
+
+  @Override
+  public void onViewCreated(View view, Bundle savedInstanceState) {
+    final Context context = this.getContext();
+    if (Utils.isLoggedIn(context)) {
+
+      mUsername = Utils.getCurrentUser(context);
+      mAccountName.setText(mUsername);
+
+      mDeleteButton.setOnClickListener(new View.OnClickListener() {
+
+        public void onClick(View view) {
+          YaraUtilityService.deleteAccount(context);
+
+        }
+      });
+      mAddAccountButton.setClickable(false);
+      mAddAccountButton.setColorFilter(R.color.gray_300);
+
+    } else {
+      mAccountName.setVisibility(View.GONE);
+      mDivider.setVisibility(View.GONE);
+      mImageView.setVisibility(View.GONE);
+      mDeleteButton.setVisibility(View.GONE);
+      mAddAccountButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          CookieManager cookieManager = CookieManager.getInstance();
+          cookieManager.removeAllCookie();
+          startActivity(new Intent(context, LoginActivity.class));
+        }
+      });
+
+    }
+
   }
 
 }

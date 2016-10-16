@@ -73,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
               .getOAuthHelper()
               .onUserChallenge(params[0], creds);
           AuthenticationManager.get().getRedditClient().authenticate(data);
+
           //AuthenticationManager.get().onAuthenticated(data);
 
           String user = AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
@@ -83,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
 
           Log.d(LOG_TAG, "token " + token + " token2 " + token2);
 
-          Utils.addUser(LoginActivity.this.getApplicationContext(), user, token2);
+          Utils.setCurrentUser(LoginActivity.this.getApplicationContext(), user);
 
           return AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
         } catch (NetworkException | OAuthException e) {

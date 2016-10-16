@@ -12,36 +12,90 @@
     tools:context="com.amzgolinski.yara.ui.AccountsFragment"
     tools:showIn="@layout/activity_accounts">
 
-  <android.support.v7.widget.RecyclerView
-      android:id="@+id/accounts"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"/>
-
   <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:orientation="horizontal"
-                android:layout_below="@id/accounts"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="16dp">
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  android:id="@+id/account"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:clickable="false"
+                  android:paddingBottom="16dp"
+                  android:paddingTop="16dp">
+
+    <ImageView
+
+        android:id="@+id/account_image"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:src="@drawable/ic_person_black_24dp"
+        android:tint="?android:attr/colorAccent"/>
 
     <TextView
         android:id="@+id/account_name"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/account_activity_add_account"
+        android:layout_height="48dp"
+        android:layout_alignTop="@+id/account_image"
+        android:layout_toEndOf="@+id/account_image"
+        android:gravity="center_vertical"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:text="reddit_user"
         android:textSize="24sp"/>
 
     <ImageButton
-        android:id="@+id/add_account"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/account_name"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
-        android:background="@android:color/transparent"
-        android:onClick="addAccount"
+        android:id="@+id/delete_account_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_alignParentEnd="true"
-        android:src="@drawable/ic_add_circle_outline_black_36dp"/>
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/delete_account"
+        android:gravity="center_vertical"
+        android:paddingEnd="24dp"
+        android:paddingStart="24dp"
+        android:src="@drawable/ic_delete_black_24dp"
+        android:tint="?android:attr/textColor"/>
+
+  </RelativeLayout>
+
+  <View
+      android:id="@+id/divider"
+      style="@style/Divider"
+      android:layout_below="@+id/account"/>
+
+  <RelativeLayout
+
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@id/divider"
+      android:orientation="horizontal"
+      android:paddingTop="16dp">
+
+    <TextView
+        android:id="@+id/add_account_title"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:gravity="center_vertical"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:text="@string/add_account"
+        android:textSize="24sp"/>
+
+    <ImageButton
+        android:id="@+id/add_account_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/add_account"
+        android:onClick="addAccount"
+        android:paddingEnd="24dp"
+        android:paddingStart="24dp"
+        android:src="@drawable/ic_add_circle_outline_black_24dp"
+        android:tint="?android:attr/textColor"/>
 
   </RelativeLayout>
 

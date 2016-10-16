@@ -27,14 +27,14 @@ public class YaraWidgetService extends RemoteViewsService {
       RedditContract.SubmissionsEntry.COLUMN_SUBMISSION_ID,
       RedditContract.SubmissionsEntry.COLUMN_SUBREDDIT_NAME,
       RedditContract.SubmissionsEntry.COLUMN_TITLE,
-      RedditContract.SubmissionsEntry.COLUMN_THUMBNAIL,
+      RedditContract.SubmissionsEntry.COLUMN_SCORE,
   };
 
   public static final int COL_ID = 0;
   public static final int COL_SUBMISSION_ID = 1;
   public static final int INDEX_COLUMN_SUBREDDIT_NAME = 2;
   public static final int INDEX_COLUMN_TITLE = 3;
-  public static final int COL_THUMBNAIL = 4;
+  public static final int INDEX_COLUMN_SCORE = 4;
 
   @Override
   public RemoteViewsFactory onGetViewFactory(Intent intent) {
@@ -71,12 +71,12 @@ public class YaraWidgetService extends RemoteViewsService {
     }
 
     public int getCount() {
-      Log.d(LOG_TAG, "getCount");
+      //Log.d(LOG_TAG, "getCount");
       return (mCursor == null ? 0 : mCursor.getCount());
     }
 
     public RemoteViews getViewAt(int position) {
-      Log.d(LOG_TAG, "getViewAt");
+      //Log.d(LOG_TAG, "getViewAt");
 
       if (position == AdapterView.INVALID_POSITION ||
           mCursor == null ||
@@ -96,7 +96,13 @@ public class YaraWidgetService extends RemoteViewsService {
           mContext.getResources().getString(R.string.subreddit_name),
           mCursor.getString(INDEX_COLUMN_SUBREDDIT_NAME)
       );
-      views.setTextViewText(R.id.widget_item_subreddit, subredditText);
+      int score = mCursor.getInt(INDEX_COLUMN_SCORE);
+      String detail = String.format(
+          mContext.getResources().getString(R.string.appwidget_text_detail),
+          subredditText,
+          score
+      );
+      views.setTextViewText(R.id.widget_item_detail, detail);
 
       final Intent fillInIntent = new Intent();
       String submissionId = Integer.toString(mCursor.getInt(COL_SUBMISSION_ID));

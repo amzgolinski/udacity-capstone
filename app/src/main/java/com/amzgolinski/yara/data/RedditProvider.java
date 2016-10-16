@@ -195,7 +195,6 @@ public class RedditProvider extends ContentProvider {
       }
 
       case SUBMISSION: {
-        Log.d(LOG_TAG, "INSERTING SUBMISSION");
         long _id = db.insert(RedditContract.SubmissionsEntry.TABLE_NAME, null, values);
         // insert unless it is already contained in the database
         if (_id > 0) {

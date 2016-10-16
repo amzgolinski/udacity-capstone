@@ -34,18 +34,8 @@ public class AccountsActivity extends AppCompatActivity
   private static final String LOG_TAG = AccountsActivity.class.getName();
   private static final String ADD_USER_DIALOG = "add_user_fragment_dialog";
 
-  private ArrayList<String> mUsers;
+
   //private LoggedInAccount mRedditAccount;
-
-  @OnClick(R.id.add_account)
-  public void addAccount(View view) {
-
-    FragmentManager fm = getSupportFragmentManager();
-    DialogFragment fragment =
-        AddAccountDialogFragment.newInstance(getString(R.string.dialog_add_user_title));
-    fragment.show(fm, ADD_USER_DIALOG);
-
-  }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +47,9 @@ public class AccountsActivity extends AppCompatActivity
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-    mUsers = Utils.getUsers(this.getApplicationContext());
-    //new FetchLoggedInAccountTask(this.getApplicationContext(), this).execute();
-    Log.d(LOG_TAG, mUsers.toString());
+
+
+
 
   }
 

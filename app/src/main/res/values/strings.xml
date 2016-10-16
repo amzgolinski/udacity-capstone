@@ -21,23 +21,27 @@
   <string name="current_user_key">current_user</string>
   <string name="logged_in">logged_in</string>
 
+  <string name="share_text">"Check out this Reddit post: </string>
   <string name="reddit_username_hint">Reddit User</string>
   <string name="add_user_title">Reddit Username</string>
 
   <string name="dialog_add_user_button">Add</string>
   <string name="dialog_cancel_button">Cancel</string>
   <string name="dialog_add_user_title">Enter Reddit username</string>
-  <string name="account_activity_add_account">Add Account</string>
+
+  <!-- Content descriptions -->
+  <string name="add_account">Add Account</string>
+  <string name="delete_account">Delete Account</string>
 
   <!-- submission item strings -->
   <string name="submission_id">submission_id</string>
   <string name="vote">vote</string>
-
+  <string name="score">score</string>
 
   <string name="submissions_loading">Loading...</string>
 
   <string name="subreddit_name">/r/%1$s</string>
-  <string name="submission_comment_count">%1$d comments</string>
+  <string name="submission_comment_count">%1$d comment(s)</string>
   <string name="more_comments">(%1$d) more comments</string>
 
   <!-- menu actions -->
@@ -50,11 +54,12 @@
   <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
 
   <!-- Sync Adapter -->
-  <string name="sync_account_type">sunshine.example.com</string>
-  <string name="content_authority">com.example.android.sunshine.app</string>
+  <string name="sync_account_type">yara.amzgolinski.com</string>
+  <string name="content_authority">com.amzgolinski.yara.app</string>
 
   <!-- widget strings -->
   <string name="empty_view_text">There is no data to display.</string>
+  <string name="appwidget_text_detail">%1$s\t-\t%2$d</string>
   <string name="appwidget_text">Yara Widget</string>
 
 </resources>

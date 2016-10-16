@@ -47,13 +47,13 @@
   <style name="submission_item_comments">
     <item name="android:textSize">@dimen/submission_item_text_size</item>
     <item name="android:paddingBottom">@dimen/submission_item_padding_bottom</item>
-    <item name="android:paddingStart">71dp</item>
+    <item name="android:paddingStart">4dp</item>
   </style>
 
   <!-- submission list subreddit score -->
   <style name="submission_item_score">
-    <item name="android:textSize">12sp</item>
-    <item name="android:paddingBottom">@dimen/submission_item_padding_bottom</item>
+    <item name="android:textSize">14sp</item>
+
     <item name="android:textColor">@color/accent</item>
   </style>
 
@@ -63,6 +63,15 @@
     <item name="android:paddingTop">@dimen/submission_detail_padding_top</item>
     <item name="android:paddingBottom">@dimen/submission_detail_padding_bottom</item>
     <item name="android:paddingStart">@dimen/submission_detail_padding_start</item>
+  </style>
+
+  <!-- submission detail author -->
+  <style name="submission_detail_author">
+    <item name="android:textSize">@dimen/submission_detail_text_size</item>
+    <item name="android:paddingTop">@dimen/submission_detail_padding_top</item>
+    <item name="android:paddingBottom">@dimen/submission_detail_padding_bottom</item>
+    <item name="android:paddingStart">@dimen/submission_detail_padding_start</item>
+    <item name="android:textStyle">italic</item>
   </style>
 
   <!-- submission detail title -->
@@ -83,11 +92,14 @@
     <item name="android:textColor">@android:color/black</item>
   </style>
 
+  <!-- submission detail comment icon -->
+  <style name="submission_detail_comment_icon">
+    <item name="android:textSize">@dimen/submission_detail_text_size</item>
+    <item name="android:paddingStart">@dimen/submission_detail_padding_start</item>
+  </style>
   <!-- submission detail comment count -->
   <style name="submission_detail_comment_count">
     <item name="android:textSize">@dimen/submission_detail_text_size</item>
-    <item name="android:paddingTop">@dimen/submission_detail_padding_top</item>
-    <item name="android:paddingBottom">@dimen/submission_detail_padding_bottom</item>
     <item name="android:paddingStart">@dimen/submission_detail_padding_start</item>
   </style>
 

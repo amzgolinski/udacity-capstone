@@ -10,4 +10,7 @@
   <color name="primaryDark">#006064</color>
   <color name="primaryLight">#4dd0e1</color>
   <color name="accent">#e53935</color>
+
+  <color name="black">#000000</color>
+
 </resources>

@@ -24,7 +24,7 @@
 
   <!-- submission detail -->
   <dimen name="submission_detail_text_size">12sp</dimen>
-  <dimen name="submission_detail_padding_start">12dp</dimen>
+  <dimen name="submission_detail_padding_start">8dp</dimen>
   <dimen name="submission_detail_padding_top">8dp</dimen>
   <dimen name="submission_detail_padding_bottom">4dp</dimen>
 
