@@ -9,6 +9,12 @@ android {
             storeFile file('yara.jks')
             storePassword 'password'
         }
+        debug {
+            keyAlias 'Key'
+            keyPassword 'password'
+            storeFile file('yara.jks')
+            storePassword 'password'
+        }
     }
     compileSdkVersion 24
     buildToolsVersion "24.0.2"
@@ -19,7 +25,7 @@ android {
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
-
+        signingConfig signingConfigs.release
     }
     buildTypes {
         release {
@@ -30,6 +36,8 @@ android {
     packagingOptions {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/LICENSE'
+    }
+    productFlavors {
     }
 }
 
