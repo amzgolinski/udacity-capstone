@@ -94,10 +94,8 @@ public class SubmissionDetailFragment extends Fragment
 
   @Override
   public void onActivityCreated(Bundle savedInstanceState) {
-    Log.d(LOG_TAG, "onActivityCreated");
     super.onActivityCreated(savedInstanceState);
     getLoaderManager().initLoader(SUBMISSION_LOADER_ID, null, this);
-
     if (savedInstanceState != null) {
       mSubmissionUri = savedInstanceState.getParcelable(URI);
       mComments = savedInstanceState.getParcelableArrayList(COMMENTS);
@@ -106,9 +104,7 @@ public class SubmissionDetailFragment extends Fragment
     }
 
     String id = Utils.longToRedditId(ContentUris.parseId(mSubmissionUri));
-
     new FetchCommentsTask(this.getContext(), this).execute(id);
-
     mReciever =  new BroadcastReceiver() {
       @Override
       public void onReceive(Context context, Intent intent) {
@@ -131,7 +127,6 @@ public class SubmissionDetailFragment extends Fragment
 
   @Override
   public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-    Log.d(LOG_TAG, "onCreateLoader");
     if (mSubmissionUri != null) {
       Log.v(LOG_TAG, mSubmissionUri.toString());
       return getCursorLoader(mSubmissionUri, SUBMISSION_COLUMNS);

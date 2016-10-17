@@ -20,7 +20,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.adapter.SubredditAdapter;

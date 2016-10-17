@@ -1,6 +1,8 @@
 package com.amzgolinski.yara;
 
 import android.app.Application;
+import android.content.Context;
+import android.support.multidex.MultiDex;
 
 import net.dean.jraw.android.AndroidRedditClient;
 import net.dean.jraw.android.AndroidTokenStore;
@@ -25,14 +27,13 @@ public class YaraApplication extends Application {
     RedditClient reddit = new AndroidRedditClient(this);
     reddit.setLoggingMode(LoggingMode.NEVER);
     AuthenticationManager.get().init(
-      reddit,
-      new RefreshTokenHandler(new AndroidTokenStore(this), reddit));
+        reddit,
+        new RefreshTokenHandler(new AndroidTokenStore(this), reddit));
   }
 
-  /*
   @Override
-  public void attachBaseContext(Context base) {
+  protected void attachBaseContext(Context base) {
+    super.attachBaseContext(base);
     MultiDex.install(this);
   }
-  */
 }

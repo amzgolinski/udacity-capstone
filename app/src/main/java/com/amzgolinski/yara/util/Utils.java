@@ -157,14 +157,10 @@ public class Utils {
                                 AccountRetrievedCallback callback) {
     switch (state) {
       case READY:
-        Log.d(LOG_TAG, state.toString());
         new FetchLoggedInAccountTask(context, callback).execute();
         break;
       case NEED_REFRESH:
-        Log.d(LOG_TAG, state.toString());
-        Log.d(LOG_TAG, "NOT REFRESHING");
         if (!Utils.isRefreshing(context)) {
-          Log.d(LOG_TAG, "NOT REFRESHING");
           new RefreshAccessTokenTask(context, callback).execute();
           setAuthRefreshStatus(context);
         }
@@ -185,7 +181,6 @@ public class Utils {
   public static boolean isRefreshing(Context context) {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
     boolean refreshing = prefs.getBoolean(context.getString(R.string.refresh_status_key), false);
-    Log.d(LOG_TAG, "REFRESHING: " + refreshing);
     return refreshing;
   }
 
