@@ -8,6 +8,6 @@ import net.dean.jraw.models.LoggedInAccount;
 
 public interface AccountRetrievedCallback {
 
-  public void onAccountRetrieved(LoggedInAccount account);
+  public void onAccountRetrieved(LoggedInAccount account, String message);
 
 }

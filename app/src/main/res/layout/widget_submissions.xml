@@ -36,12 +36,8 @@
               xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:gravity="center"
-              android:text="@string/empty_view_text"
-              android:textAppearance="?android:textAppearanceLarge"
-              android:textColor="@android:color/white"
-              android:textSize="18sp"
-              android:textStyle="bold"/>
+              style="@style/empty_widget"
+              android:text="@string/empty_view_text"/>
   </FrameLayout>
 
 </LinearLayout>

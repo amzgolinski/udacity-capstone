@@ -2,8 +2,15 @@ package com.amzgolinski.yara.data;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.net.Uri;
 import android.provider.BaseColumns;
+
+import com.amzgolinski.yara.util.Utils;
+
+import net.dean.jraw.models.Submission;
+
+import org.apache.commons.lang3.StringEscapeUtils;
 
 
 public class RedditContract {
@@ -73,6 +80,39 @@ public class RedditContract {
     public static final String COLUMN_VOTE           = "vote";
     public static final String COLUMN_IS_READ_ONLY   = "read_only";
     public static final String COLUMN_TYPE           = "type";
+    public static final String COLUMN_HINT           = "hint";
+
+    public static ContentValues submissionToContentValue(Submission submission) {
+      ContentValues toReturn = new ContentValues();
+      toReturn.put(SubmissionsEntry.COLUMN_SUBMISSION_ID, Utils.redditIdToLong(submission.getId()));
+      toReturn.put(
+          SubmissionsEntry.COLUMN_SUBREDDIT_ID,
+          Utils.redditParentIdToLong(submission.getSubredditId())
+      );
+      toReturn.put(SubmissionsEntry.COLUMN_SUBREDDIT_NAME, submission.getSubredditName());
+      toReturn.put(SubmissionsEntry.COLUMN_AUTHOR, submission.getAuthor());
+      toReturn.put(
+          SubmissionsEntry.COLUMN_TITLE,
+          StringEscapeUtils.unescapeHtml4(submission.getTitle())
+      );
+      toReturn.put(SubmissionsEntry.COLUMN_URL, submission.getUrl());
+      toReturn.put(SubmissionsEntry.COLUMN_COMMENT_COUNT, submission.getCommentCount());
+      toReturn.put(SubmissionsEntry.COLUMN_SCORE, submission.getScore());
+      int readOnly = (Utils.isSubmissionReadOnly(submission) ? 1 : 0);
+      toReturn.put(SubmissionsEntry.COLUMN_IS_READ_ONLY, readOnly);
+      toReturn.put(SubmissionsEntry.COLUMN_THUMBNAIL, submission.getThumbnail());
+
+      String selfText = submission.data("selftext_html");
+      if (!Utils.isStringEmpty(selfText)) {
+        selfText = StringEscapeUtils.unescapeHtml4(selfText);
+        selfText = Utils.removeHtmlSpacing(selfText);
+      }
+      toReturn.put(SubmissionsEntry.COLUMN_TEXT, selfText);
+      toReturn.put(SubmissionsEntry.COLUMN_VOTE, submission.getVote().getValue());
+      toReturn.put(SubmissionsEntry.COLUMN_HINT, submission.getPostHint().toString());
+
+      return toReturn;
+    }
 
     public static Uri buildSubmissionUri(long id) {
       return ContentUris.withAppendedId(CONTENT_URI, id);

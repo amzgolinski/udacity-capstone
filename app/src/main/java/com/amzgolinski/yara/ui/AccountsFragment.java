@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -44,7 +45,6 @@ public class AccountsFragment extends Fragment {
 
   @Override
   public void onActivityCreated(Bundle savedInstanceState) {
-    Log.d(LOG_TAG, "onActivityCreated");
     super.onActivityCreated(savedInstanceState);
     mReceiver = new BroadcastReceiver() {
 
@@ -57,14 +57,12 @@ public class AccountsFragment extends Fragment {
 
   @Override
   public void onPause() {
-    Log.d(LOG_TAG, "onPause");
     super.onPause();
     LocalBroadcastManager.getInstance(getContext()).unregisterReceiver((mReceiver));
   }
 
   @Override
   public void onResume() {
-    Log.d(LOG_TAG, "onResume");
     super.onResume();
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(
         mReceiver, new IntentFilter(YaraUtilityService.ACTION_DELETE_ACCOUNT));
@@ -94,10 +92,14 @@ public class AccountsFragment extends Fragment {
 
         }
       });
+      mAddAccountTitle.setTextColor(getContext().getResources().getColor(R.color.gray_700, null));
+      Drawable addButton = getResources().getDrawable(R.drawable.ic_add_circle_outline_black_24dp);
+      addButton.setTint(getResources().getColor(R.color.gray_700, null));
+      mAddAccountButton.setImageDrawable(addButton);
       mAddAccountButton.setClickable(false);
-      mAddAccountButton.setColorFilter(R.color.gray_300);
 
     } else {
+
       mAccountName.setVisibility(View.GONE);
       mDivider.setVisibility(View.GONE);
       mImageView.setVisibility(View.GONE);
@@ -105,14 +107,18 @@ public class AccountsFragment extends Fragment {
       mAddAccountButton.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          CookieManager cookieManager = CookieManager.getInstance();
-          cookieManager.removeAllCookie();
-          startActivity(new Intent(context, LoginActivity.class));
+          if (Utils.isNetworkAvailable(getContext())) {
+            CookieManager cookieManager = CookieManager.getInstance();
+            cookieManager.removeAllCookie();
+            startActivity(new Intent(context, LoginActivity.class));
+          } else {
+            Utils.showToast(
+                getContext(),
+                getContext().getResources().getString(R.string.error_no_internet)
+            );
+          }
         }
       });
-
     }
-
   }
-
 }

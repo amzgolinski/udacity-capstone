@@ -10,6 +10,7 @@ import net.dean.jraw.auth.RefreshTokenHandler;
 import net.dean.jraw.http.LoggingMode;
 import net.dean.jraw.http.oauth.Credentials;
 
+
 public class YaraApplication extends Application {
 
   public static final Credentials CREDENTIALS =
@@ -27,4 +28,11 @@ public class YaraApplication extends Application {
       reddit,
       new RefreshTokenHandler(new AndroidTokenStore(this), reddit));
   }
+
+  /*
+  @Override
+  public void attachBaseContext(Context base) {
+    MultiDex.install(this);
+  }
+  */
 }

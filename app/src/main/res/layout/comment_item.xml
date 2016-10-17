@@ -24,6 +24,18 @@
         style="@style/comment_text"
         android:text="This is the comment.  blah blah blah" />
 
+    <ProgressBar
+        android:id="@+id/load_comments_progress"
+        style="@android:style/Widget.DeviceDefault.ProgressBar.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/comment_padding_top"
+        android:paddingBottom="@dimen/comment_padding_bottom"
+        android:paddingStart="@dimen/comment_padding_start"
+        android:paddingEnd="@dimen/comment_padding_end"
+        android:visibility="visible"
+        android:gravity="center"/>
+
   </LinearLayout>
 
   </LinearLayout>

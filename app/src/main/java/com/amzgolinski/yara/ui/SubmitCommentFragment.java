@@ -27,6 +27,7 @@ import android.widget.TextView;
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.data.RedditContract;
 import com.amzgolinski.yara.service.YaraUtilityService;
+import com.amzgolinski.yara.util.Utils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -70,7 +71,13 @@ public class SubmitCommentFragment extends Fragment
       @Override
       public void onReceive(Context context, Intent intent) {
         mSubmitComment.setVisibility(View.GONE);
-        getActivity().onBackPressed();
+        boolean status = intent.getBooleanExtra(YaraUtilityService.PARAM_STATUS, true);
+        if (!status) {
+          Utils.handleError(context, intent.getStringExtra(YaraUtilityService.PARAM_MESSAGE));
+        } else {
+          getActivity().onBackPressed();
+        }
+
       }
     };
   }

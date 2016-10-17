@@ -82,7 +82,8 @@
         android:name=".data.RedditProvider"
         android:authorities="com.amzgolinski.yara.provider"
         android:enabled="true"
-        android:exported="true">
+        android:syncable="true"
+        android:exported="false">
     </provider>
 
     <!-- SyncAdapter's dummy authentication service -->
@@ -112,9 +113,9 @@
     <receiver
         android:name=".widget.YaraWidgetProvider"
         android:enabled="true"
-        android:label="Widget">
+        android:label="@string/appwidget_text">
       <intent-filter>
-        <action android:name="com.amzgolinski.yara.widget.MANUAL_UPDATE"/>
+        <action android:name="com.amzgolinski.yara.ACTION_DATA_UPDATED"/>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
       </intent-filter>
 

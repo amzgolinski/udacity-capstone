@@ -19,33 +19,6 @@ public class RedditDbHelper extends SQLiteOpenHelper {
 
 
   @Override
-  public void onOpen(SQLiteDatabase sqLiteDatabase) {
-
-    // Drop the Subreddits table
-    sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RedditContract.SubredditsEntry.TABLE_NAME);
-
-    // Drop the Subreddits ID Sequence
-    sqLiteDatabase.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = '"
-        + RedditContract.SubredditsEntry.TABLE_NAME + "'");
-
-    // Drop the Submissions table
-    sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RedditContract.SubmissionsEntry.TABLE_NAME);
-
-    // Drop the Submissions ID Sequence
-    sqLiteDatabase.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = '"
-        + RedditContract.SubmissionsEntry.TABLE_NAME + "'");
-
-    // Drop the Comments table
-    sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RedditContract.CommentsEntry.TABLE_NAME);
-
-    // Drop the Comments ID Sequence
-    sqLiteDatabase.execSQL("DELETE FROM SQLITE_SEQUENCE WHERE NAME = '"
-        + RedditContract.CommentsEntry.TABLE_NAME + "'");
-
-    onCreate(sqLiteDatabase);
-  }
-
-  @Override
   public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
     // Subreddit
@@ -82,6 +55,7 @@ public class RedditDbHelper extends SQLiteOpenHelper {
         RedditContract.SubmissionsEntry.COLUMN_VOTE + " INTEGER, " +
         RedditContract.SubmissionsEntry.COLUMN_IS_READ_ONLY + " INTEGER, " +
         RedditContract.SubmissionsEntry.COLUMN_THUMBNAIL + " TEXT, " +
+        RedditContract.SubmissionsEntry.COLUMN_HINT + " TEXT, " +
 
         " FOREIGN KEY (" + RedditContract.SubmissionsEntry.COLUMN_SUBREDDIT_ID +
         ") REFERENCES " + RedditContract.SubredditsEntry.TABLE_NAME + " (" +

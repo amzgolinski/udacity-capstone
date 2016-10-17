@@ -51,7 +51,7 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_comment_white_36dp"/>
+        android:src="@drawable/ic_forum_white_36dp"/>
   </FrameLayout>
 
 
@@ -64,9 +64,8 @@
         android:id="@+id/comment_icon"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:onClick="upVote"
+        style="@style/submission_detail_comment_icon"
         android:layout_centerVertical="true"
-        android:paddingStart="12dp"
         android:src="@drawable/ic_comment_black_24dp"/>
 
     <TextView
@@ -76,8 +75,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/comment_icon"
-        android:text="12345 comments"
-        android:textSize="16sp"/>
+        android:text="12345 comments"/>
 
     <RelativeLayout
         android:id="@+id/score_container"
@@ -89,9 +87,7 @@
           android:id="@+id/up_arrow"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_centerVertical="true"
-          android:paddingEnd="2dp"
-          android:paddingStart="2dp"
+          style="@style/submission_detail_arrow_icons"
           android:src="@drawable/ic_arrow_upward_black_24dp"/>
 
       <TextView
@@ -99,20 +95,15 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_toEndOf="@+id/up_arrow"
-          android:layout_centerVertical="true"
-          android:paddingEnd="4dp"
-          android:paddingStart="4dp"
-          android:textColor="@color/accent"
-          android:text="78907"
-          android:textSize="16sp"/>
+          style="@style/submission_detail_score"
+          android:text="78907"/>
 
       <ImageView
           android:id="@+id/down_arrow"
           android:layout_width="wrap_content"
           android:layout_height="match_parent"
           android:layout_toEndOf="@+id/submission_detail_score"
-          android:paddingEnd="2dp"
-          android:paddingStart="2dp"
+          style="@style/submission_detail_arrow_icons"
           android:src="@drawable/ic_arrow_downward_black_24dp"/>
 
     </RelativeLayout>

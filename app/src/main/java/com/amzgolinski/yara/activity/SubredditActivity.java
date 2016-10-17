@@ -7,7 +7,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.amzgolinski.yara.R;
-import com.amzgolinski.yara.tasks.FetchSubredditsTask;
 
 public class SubredditActivity extends AppCompatActivity {
 

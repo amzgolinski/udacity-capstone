@@ -1,6 +1,7 @@
 package com.amzgolinski.yara.model;
 
-import android.util.Log;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import net.dean.jraw.models.CommentNode;
 
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class CommentItem implements Serializable {
+public class CommentItem implements Serializable, Parcelable {
 
   private static final String LOG_TAG = CommentItem.class.getName();
 
@@ -42,6 +43,11 @@ public class CommentItem implements Serializable {
     mType = type;
     mMoreCommentsCount = moreCommentsCount;
     mDepth = depth;
+  }
+
+  public CommentItem(Parcel in) {
+    super();
+    readFromParcel(in);
   }
 
   public String getId() {
@@ -174,6 +180,48 @@ public class CommentItem implements Serializable {
       }
     }
     return toReturn;
+  }
+
+  public static final Parcelable.Creator<CommentItem> CREATOR
+      = new Parcelable.Creator<CommentItem>() {
+    public CommentItem createFromParcel(Parcel in) {
+      return new CommentItem(in);
+    }
+
+    public CommentItem[] newArray(int size) {
+
+      return new CommentItem[size];
+    }
+
+  };
+
+  public void readFromParcel(Parcel in) {
+    mId = in.readString();
+    mSubmissionId = in.readString();
+    mAuthor = in.readString();
+    mBody = in.readString();
+    mScore = in.readInt();
+    mType = in.readInt();
+    mMoreCommentsCount = in.readInt();
+    mDepth = in.readInt();
+
+  }
+  @Override
+  public void writeToParcel(Parcel dest, int flags) {
+
+    dest.writeString(mId);
+    dest.writeString(mSubmissionId);
+    dest.writeString(mAuthor);
+    dest.writeString(mBody);
+    dest.writeInt(mScore);
+    dest.writeInt(mType);
+    dest.writeInt(mMoreCommentsCount);
+    dest.writeInt(mDepth);
+  }
+
+  @Override
+  public int describeContents() {
+    return 0;
   }
 
 }

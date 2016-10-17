@@ -3,12 +3,9 @@ package com.amzgolinski.yara.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,15 +14,12 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.activity.SubmissionDetailActivity;
 import com.amzgolinski.yara.callbacks.RedditDownloadCallback;
 import com.amzgolinski.yara.data.RedditContract;
 import com.amzgolinski.yara.service.YaraUtilityService;
-import com.amzgolinski.yara.tasks.SubmitVoteTask;
-import com.amzgolinski.yara.ui.SubmissionDetailFragment;
 import com.amzgolinski.yara.ui.SubmissionListFragment;
 import com.amzgolinski.yara.util.Utils;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -49,6 +43,7 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
   public SubmissionListAdapter(Context context, Cursor cursor, RedditDownloadCallback callback) {
 
     mContext = context;
+    mFirebaseAnalytics = FirebaseAnalytics.getInstance(context);
     mCursorAdapter = new CursorAdapter(mContext, cursor, 0) {
 
       @Override
@@ -59,7 +54,7 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
 
       @Override
       public void bindView(View view, Context context, final Cursor cursor) {
-        Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
+        //Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(cursor));
         // subreddit name
         TextView submissionSubreddit = (TextView) view.findViewById(R.id.submission_item_subreddit);
         String subredditText = String.format(
@@ -94,10 +89,8 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
 
         // up vote
         ImageView upArrowView = (ImageView) view.findViewById(R.id.submission_item_up_arrow);
-        Log.d(LOG_TAG, "VOTE: " + vote);
         Drawable upArrow = context.getDrawable(R.drawable.ic_arrow_upward_black_24dp);
         if (vote == VoteDirection.UPVOTE.getValue()) {
-          Log.d(LOG_TAG, "IN UPVOTE: " + vote);
           upArrow.setTint(context.getColor(R.color.accent));
         } else {
           upArrow.setTint(context.getColor(R.color.black));
@@ -119,7 +112,6 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
         ImageView downArrowView = (ImageView) view.findViewById(R.id.submission_item_down_arrow);
         Drawable downArrow = context.getDrawable(R.drawable.ic_arrow_downward_black_24dp);
         if (vote == VoteDirection.DOWNVOTE.getValue()) {
-          Log.d(LOG_TAG, "IN DOWNVOTE: " + vote);
           downArrow.setTint(context.getColor(R.color.accent));
         } else {
           downArrow.setTint(context.getColor(R.color.black));
@@ -146,12 +138,11 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
               .error(R.drawable.ic_do_not_distrub_black_24dp)
               .into(thumbnailView);
         } else {
-          thumbnailView.setBackgroundColor(
-              mContext.getResources().getColor(R.color.gray_300, null)
-          );
-          thumbnailView.setImageDrawable(
-              mContext.getResources().getDrawable(R.drawable.ic_comment_white_36dp, null)
-          );
+
+          Drawable forum
+              = mContext.getResources().getDrawable(R.drawable.ic_forum_white_36dp, null);
+          forum.setTint(mContext.getColor(R.color.gray_300));
+          thumbnailView.setImageDrawable(forum);
         }
       }
 
@@ -159,6 +150,9 @@ public class SubmissionListAdapter extends RecyclerView.Adapter<SubmissionListAd
         Bundle bundle = new Bundle();
         bundle.putString(FirebaseAnalytics.Param.ITEM_ID, Long.toString(submissionId));
         bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, Integer.toString(direction));
+        bundle.putString(
+            FirebaseAnalytics.Param.ITEM_LOCATION_ID,
+            mContext.getResources().getString(R.string.location_list));
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
       }
     };

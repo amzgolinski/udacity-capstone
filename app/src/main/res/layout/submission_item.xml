@@ -23,8 +23,6 @@
       <ImageView
           android:id="@+id/submission_item_thumbnail"
           style="@style/image"
-          android:layout_width="50dp"
-          android:layout_height="50dp"
           android:src="@drawable/ic_do_not_distrub_black_24dp"
           android:transitionName="image"/>
 
@@ -69,18 +67,15 @@
         android:id="@+id/submission_item_icon_comment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingStart="71dp"
-        android:layout_gravity="center_vertical"
-        android:src="@drawable/ic_comment_black_24dp"
-        android:tag="1"/>
+        style="@style/submission_item_comment_icon"
+        android:src="@drawable/ic_comment_black_24dp"/>
 
     <TextView
         android:id="@+id/submission_item_comments"
         style="@style/submission_item_comments"
         android:layout_width="wrap_content"
-        android:layout_toEndOf="@+id/submission_item_icon_comment"
         android:layout_height="wrap_content"
-        android:paddingTop="4dp"
+        android:layout_toEndOf="@+id/submission_item_icon_comment"
         android:text="12345 comments"/>
 
     <LinearLayout
@@ -95,8 +90,7 @@
           android:id="@+id/submission_item_up_arrow"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:paddingStart="4dp"
-          android:layout_gravity="center_vertical"
+          style="@style/submission_item_detail_icon"
           android:src="@drawable/ic_arrow_upward_black_24dp"/>
 
       <TextView
@@ -104,16 +98,13 @@
           style="@style/submission_item_score"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_vertical"
-          android:paddingStart="4dp"
           android:text="78907"/>
 
       <ImageView
           android:id="@+id/submission_item_down_arrow"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_vertical"
-          android:paddingStart="4dp"
+          style="@style/submission_item_detail_icon"
           android:src="@drawable/ic_arrow_downward_black_24dp"/>
     </LinearLayout>
   </RelativeLayout>

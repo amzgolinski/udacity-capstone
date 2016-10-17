@@ -58,7 +58,6 @@ public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.View
         checkBox.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
-            Toast.makeText(mContext, "Clicked", Toast.LENGTH_SHORT).show();
             mToRemove.add((String) v.getTag());
           }
         });
@@ -100,7 +99,6 @@ public class SubredditAdapter extends RecyclerView.Adapter<SubredditAdapter.View
     // Your holder should contain a member variable
     // for any view that will be set as you render a row
     TextView mSubredditName;
-    //@BindView(R.id.subreddit_name) TextView mSubredditName;
 
     // We also create a constructor that accepts the entire item row
     // and does the view lookups to find each subview

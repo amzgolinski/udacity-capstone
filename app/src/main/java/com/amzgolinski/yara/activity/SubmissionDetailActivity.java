@@ -18,7 +18,6 @@ public class SubmissionDetailActivity extends AppCompatActivity {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
-    Log.d(LOG_TAG, "onCreate");
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_submission_detail);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

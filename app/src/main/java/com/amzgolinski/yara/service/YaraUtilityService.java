@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.Context;
 import android.net.Uri;
+import android.os.NetworkOnMainThreadException;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -25,7 +26,6 @@ import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.Subreddit;
 import net.dean.jraw.models.VoteDirection;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -46,8 +46,14 @@ public class YaraUtilityService extends IntentService {
   public static final String ACTION_SUBREDDIT_UNSUBSCRIBE
       = "com.amzgolinski.yara.service.action.REDDIT_UNSUBSCRIBE";
 
+  public static final String ACTION_REFRESH_SUBMISSION
+      = "com.amzgolinski.yara.service.action.ACTION_REFRESH_SUBMISSION";
+
   // parameters
   public static final String PARAM_COMMENTS = "com.amzgolinski.yara.service.extra.COMMENTS";
+  public static final String PARAM_STATUS = "com.amzgolinski.yara.service.extra.STATUS";
+  public static final String PARAM_MESSAGE = "com.amzgolinski.yara.service.extra.MESSAGE";
+
   private static final String COMMENT = "com.amzgolinski.yara.service.extra.COMMENT";
   private static final String CURRENT_VOTE = "com.amzgolinski.yara.service.extra.CURRENT_VOTE";
   private static final String NEW_VOTE = "com.amzgolinski.yara.service.extra.NEW_VOTE";
@@ -55,6 +61,14 @@ public class YaraUtilityService extends IntentService {
   private static final String SUBMISSION_ID = "com.amzgolinski.yara.service.extra.SUBMISSION_ID";
   private static final String SUBREDDITS = "com.amzgolinski.yara.service.extra.SUBREDDIT_ID";
 
+  public static final String STATUS_OK = "com.amzgolinski.yara.service.action.OK";
+  public static final String STATUS_NO_INTERNET = "com.amzgolinski.yara.service.action.NO_INTERNET";
+  public static final String STATUS_NETWORK_EXCEPTION
+      = "com.amzgolinski.yara.service.action.NETWORK_EXCEPTION";
+  public static final String STATUS_API_EXCEPTION
+      = "com.amzgolinski.yara.service.action.API_EXCEPTION";
+  public static final String STATUS_AUTH_EXCEPTION =
+      "com.amzgolinski.yara.service.action.AUTH_EXCEPTION";
 
   public YaraUtilityService() {
     super("YaraUtilityService");
@@ -81,6 +95,12 @@ public class YaraUtilityService extends IntentService {
     context.startService(intent);
   }
 
+  public static void refreshSubmission(Context context, long submissionId) {
+    Intent intent = new Intent(context, YaraUtilityService.class);
+    intent.setAction(ACTION_REFRESH_SUBMISSION);
+    intent.putExtra(SUBMISSION_ID, submissionId);
+    context.startService(intent);
+  }
 
   public static void submitVote(Context context, long submissionId, int currentVote, int newVote) {
     Intent intent = new Intent(context, YaraUtilityService.class);
@@ -115,8 +135,12 @@ public class YaraUtilityService extends IntentService {
   protected void onHandleIntent(Intent intent) {
     Log.d(LOG_TAG, "onHandleIntent");
     if (intent != null) {
-      final String action = intent.getAction();
 
+      final String action = intent.getAction();
+      if (!Utils.isNetworkAvailable(getApplicationContext())) {
+        broadcastResult(new Intent(intent.getAction()), false, STATUS_NO_INTERNET);
+        return;
+      }
       // vote for submission
       if (ACTION_SUBMIT_VOTE.equals(action)) {
         final long submissionId = intent.getLongExtra(SUBMISSION_ID, 1L);
@@ -134,22 +158,29 @@ public class YaraUtilityService extends IntentService {
       } else if (ACTION_SUBREDDIT_UNSUBSCRIBE.equals(action)) {
         final ArrayList subreddits = intent.getParcelableArrayListExtra(SUBREDDITS);
         handleUnsubscribeSubreddit(subreddits);
+      } else if (ACTION_REFRESH_SUBMISSION.equals(action)) {
+        final long submissionId = intent.getLongExtra(SUBMISSION_ID, Long.MIN_VALUE);
+        handleRefreshSubmission(submissionId);
       } else if (ACTION_DELETE_ACCOUNT.equals(action)) {
         handleDeleteAccount();
       }
     }
   }
 
-  private void broadcastResult(Intent result, boolean status) {
+  private void broadcastResult(Intent result, boolean status, String message) {
     Log.d(LOG_TAG, "broadcastResult");
-    result.putExtra("STATUS", status);
+    result.putExtra(PARAM_STATUS, status);
+    result.putExtra(PARAM_MESSAGE, message);
     LocalBroadcastManager.getInstance(this).sendBroadcast(result);
   }
 
   private void handleDeleteAccount() {
     Log.d(LOG_TAG, "handleDeleteAccount");
     Intent result = new Intent(ACTION_DELETE_ACCOUNT);
+    boolean status = true;
+    String message = STATUS_OK;
 
+    try {
       AuthenticationManager.get()
           .getRedditClient()
           .getOAuthHelper()
@@ -162,38 +193,70 @@ public class YaraUtilityService extends IntentService {
 
       numDeleted = this.getContentResolver()
           .delete(RedditContract.SubredditsEntry.CONTENT_URI, null, null);
+
       Log.d(LOG_TAG, "Deleted " + numDeleted);
       Utils.logOutCurrentUser(getApplicationContext());
+      result.putExtra(PARAM_STATUS, STATUS_OK);
+    } catch (NetworkException networkException) {
+      Log.e(LOG_TAG, networkException.toString());
+      message = STATUS_NETWORK_EXCEPTION;
+      status = false;
+    }
 
-    broadcastResult(result, true);
+    broadcastResult(result, status, message);
   }
 
   private void handleLoadMoreComments(ArrayList<CommentItem> comments, int position) {
     Log.d(LOG_TAG, "handleLoadMoreComments");
     Intent result = new Intent(ACTION_LOAD_MORE_COMMENTS);
+    boolean status = true;
+    String message = STATUS_OK;
+    ArrayList<CommentItem> toReturn;
     CommentItem item = comments.get(position);
 
-    ArrayList<CommentItem> toReturn;
-    RedditClient redditClient = AuthenticationManager.get().getRedditClient();
+    try {
+      RedditClient redditClient = AuthenticationManager.get().getRedditClient();
 
-    //Log.d(LOG_TAG, wrapper.toString());
-    Submission fullSubmissionData = redditClient.getSubmission(item.getSubmissionId());
-    CommentNode rootNode = fullSubmissionData.getComments();
-    toReturn = loadMoreComments(rootNode, item, comments);
-    Log.d(LOG_TAG, "Size is: " + Integer.toString(toReturn.size()));
-    comments.remove(position);
-    Log.d(LOG_TAG, "Size is: " + Integer.toString(comments.size()));
-    comments.addAll(position, toReturn);
-    Log.d(LOG_TAG, "Size is: " + Integer.toString(comments.size()));
+      //Log.d(LOG_TAG, wrapper.toString());
+      Submission fullSubmissionData = redditClient.getSubmission(item.getSubmissionId());
+      CommentNode rootNode = fullSubmissionData.getComments();
+      toReturn = loadMoreComments(rootNode, item, comments);
+      comments.remove(position);
+      comments.addAll(position, toReturn);
+      result.putExtra(PARAM_COMMENTS, comments);
+    } catch (NetworkException networkException) {
+      Log.e(LOG_TAG, networkException.toString());
+      status = false;
+      message = STATUS_NETWORK_EXCEPTION;
+    }
+    broadcastResult(result, status, message);
+  }
 
-    result.putExtra(PARAM_COMMENTS, comments);
-    broadcastResult(result, true);
+  private void handleRefreshSubmission(long submissionId) {
+    Log.d(LOG_TAG, "handleRefreshSubmission");
+    Intent result = new Intent(ACTION_REFRESH_SUBMISSION);
+    boolean status = true;
+    String message = STATUS_OK;
+    String id = Utils.longToRedditId(submissionId); // converting long to Reddit ID
+    RedditClient reddit = AuthenticationManager.get().getRedditClient();
+    // submit reply to the server
+    // TODO: handle error
+    try {
+      Submission submission = reddit.getSubmission(id);
+      updateSubmission(submission);
+    } catch (NetworkException networkException) {
+      Log.d(LOG_TAG, networkException.toString());
+      status = false;
+    }
+
+    broadcastResult(result, status, message);
   }
 
   private void handleSubmitComment(long submissionId, String commentText) {
     Log.d(LOG_TAG, "handleSubmitComment");
     Intent result = new Intent(ACTION_SUBMIT_COMMENT);
     boolean status = true;
+    String message = STATUS_OK;
 
     String id = Utils.longToRedditId(submissionId); // converting long to Reddit ID
     RedditClient reddit = AuthenticationManager.get().getRedditClient();
@@ -207,15 +270,18 @@ public class YaraUtilityService extends IntentService {
     } catch (NetworkException | ApiException exception) {
       Log.d(LOG_TAG, exception.toString());
       status = false;
+      message = STATUS_NETWORK_EXCEPTION;
     }
 
-    broadcastResult(result, status);
+    broadcastResult(result, status, message);
   }
 
   private void handleSubmitVote(long submissionId, int currentVote, int newVote) {
 
     Intent result = new Intent(ACTION_SUBMIT_VOTE);
     boolean status = true;
+    String message = STATUS_OK;
+
     VoteDirection direction = Utils.getVote(currentVote, newVote);
 
     RedditClient reddit = AuthenticationManager.get().getRedditClient();
@@ -228,17 +294,24 @@ public class YaraUtilityService extends IntentService {
       Submission updated = reddit.getSubmission(submission.getId());
       Log.d(LOG_TAG, updated.toString());
       updateScore(updated);
-    } catch (NetworkException | ApiException exception) {
-      Log.d(LOG_TAG, exception.getMessage());
+    } catch (NetworkException networkException) {
+      Log.e(LOG_TAG, networkException.getMessage());
       status = false;
+      message = STATUS_NETWORK_EXCEPTION;
+    } catch (ApiException apiException) {
+      Log.e(LOG_TAG, apiException.getMessage());
+      status = false;
+      message = STATUS_API_EXCEPTION;
+
     }
-    broadcastResult(result, status);
+    broadcastResult(result, status, message);
   }
 
   private void handleUnsubscribeSubreddit(ArrayList<String> subreddits) {
 
     Intent result = new Intent(ACTION_SUBREDDIT_UNSUBSCRIBE);
     boolean status = true;
+    String message = STATUS_OK;
     RedditClient reddit = AuthenticationManager.get().getRedditClient();
 
     for (String subredditName : subreddits) {
@@ -250,9 +323,17 @@ public class YaraUtilityService extends IntentService {
       } catch (NetworkException exception) {
         Log.d(LOG_TAG, exception.getMessage());
         status = false;
+        message = STATUS_NETWORK_EXCEPTION;
       }
     }
-    this.broadcastResult(result, status);
+    this.broadcastResult(result, status, message);
+  }
+
+  private void updateSubmission(Submission submission) {
+    long id = Utils.redditIdToLong(submission.getId());
+    Uri submissionUri = RedditContract.SubmissionsEntry.buildSubmissionUri(id);
+    ContentValues toInsert = RedditContract.SubmissionsEntry.submissionToContentValue(submission);
+    this.getContentResolver().update(submissionUri, toInsert, null, null);
   }
 
   private void deleteSubreddit(String subredditId) {

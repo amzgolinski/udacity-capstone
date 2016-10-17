@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.MatrixCursor;
-import android.database.MergeCursor;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -20,29 +19,34 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.adapter.SubmissionListAdapter;
+import com.amzgolinski.yara.callbacks.AccountRetrievedCallback;
 import com.amzgolinski.yara.callbacks.RedditDownloadCallback;
 import com.amzgolinski.yara.data.RedditContract;
 import com.amzgolinski.yara.service.YaraUtilityService;
+import com.amzgolinski.yara.sync.SubredditSyncAdapter;
 import com.amzgolinski.yara.tasks.FetchSubredditsTask;
-import com.amzgolinski.yara.tasks.SubmitVoteTask;
 import com.amzgolinski.yara.util.Utils;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
-import com.google.firebase.analytics.FirebaseAnalytics;
+
+import net.dean.jraw.auth.AuthenticationManager;
+import net.dean.jraw.auth.AuthenticationState;
+import net.dean.jraw.models.LoggedInAccount;
+import net.dean.jraw.models.Subreddit;
+
+import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
 public class SubmissionListFragment extends Fragment
-    implements LoaderManager.LoaderCallbacks<Cursor> {
+    implements LoaderManager.LoaderCallbacks<Cursor>, AccountRetrievedCallback {
 
   private final String LOG_TAG = SubmissionListFragment.class.getName();
 
@@ -75,8 +79,12 @@ public class SubmissionListFragment extends Fragment
   public static final int COL_VOTE = 10;
 
   // Views
-  @BindView(R.id.submission_list_progress_bar_layout) ViewGroup mProgress;
-  @BindView(R.id.submission_list_swipe_refresh) SwipeRefreshLayout mSwipeRefreshLayout;
+  @BindView(R.id.submission_list_progress_bar_layout)
+  ViewGroup mProgress;
+  @BindView(R.id.submission_list_swipe_refresh)
+  SwipeRefreshLayout mSwipeRefreshLayout;
+  @BindView(R.id.empty)
+  TextView mEmpty;
 
   private SubmissionListAdapter mAdapter;
   private BroadcastReceiver mReceiver;
@@ -95,10 +103,13 @@ public class SubmissionListFragment extends Fragment
 
       @Override
       public void onReceive(Context context, Intent intent) {
-        Log.d(LOG_TAG, "onActivityCreated");
-        Log.d(LOG_TAG, intent.getAction());
-        restartLoader();
-        mProgress.setVisibility(View.GONE);
+        boolean status = intent.getBooleanExtra(YaraUtilityService.PARAM_STATUS, true);
+        if (!status) {
+          Utils.handleError(getContext(), intent.getStringExtra(YaraUtilityService.PARAM_MESSAGE));
+        } else {
+          restartLoader();
+          mProgress.setVisibility(View.GONE);
+        }
       }
     };
   }
@@ -138,14 +149,20 @@ public class SubmissionListFragment extends Fragment
     submissionsList.setLayoutManager(new LinearLayoutManager(getContext()));
     mAdapter = new SubmissionListAdapter(getActivity(), null, new RedditDownloadCallback() {
       @Override
-      public void onDownloadComplete(Object reslt) {
-        restartLoader();
+      public void onDownloadComplete(Object result, String message) {
+        Log.d(LOG_TAG, "QWERTY");
+        if (message.equals(YaraUtilityService.STATUS_OK)) {
+          restartLoader();
+        } else {
+          Utils.handleError(getContext(), message);
+        }
       }
     });
     submissionsList.setAdapter(mAdapter);
-    mProgress.setVisibility(View.VISIBLE);
+    mEmpty.setVisibility(View.GONE);
 
-    MobileAds.initialize(getContext(), "ca-app-pub-3940256099942544~3347511713");
+    // ad unit
+    MobileAds.initialize(getContext(), getContext().getResources().getString(R.string.pub_id));
     AdView mAdView = (AdView) root.findViewById(R.id.ad_view);
     AdRequest adRequest = new AdRequest.Builder().build();
     mAdView.loadAd(adRequest);
@@ -158,9 +175,7 @@ public class SubmissionListFragment extends Fragment
     Log.d(LOG_TAG, "onLoadFinished");
     //Log.d(LOG_TAG, DatabaseUtils.dumpCursorToString(data));
     Log.d(LOG_TAG, "Logged in: " + Utils.isLoggedIn(getContext()));
-    if (Utils.isCursorEmpty(data) && Utils.isLoggedIn(getContext())) {
-      fetchSubreddits();
-    } else {
+    if (mProgress.getVisibility() == View.VISIBLE) {
       mProgress.setVisibility(View.GONE);
     }
     mAdapter.swapCursor(data);
@@ -190,6 +205,14 @@ public class SubmissionListFragment extends Fragment
 
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(
         mReceiver, new IntentFilter(YaraUtilityService.ACTION_SUBREDDIT_UNSUBSCRIBE));
+
+    LocalBroadcastManager.getInstance(getContext()).registerReceiver(
+        mReceiver, new IntentFilter(SubredditSyncAdapter.ACTION_DATA_UPDATED));
+
+    if (Utils.isLoggedIn(getContext()) && !Utils.isRefreshing(getContext())) {
+      AuthenticationState state = AuthenticationManager.get().checkAuthState();
+      Utils.updateAuth(getContext(), state, this);
+    }
   }
 
   @Override
@@ -201,11 +224,29 @@ public class SubmissionListFragment extends Fragment
   private void fetchSubreddits() {
     new FetchSubredditsTask(this.getContext(), new RedditDownloadCallback() {
       @Override
-      public void onDownloadComplete(Object result) {
+      public void onDownloadComplete(Object result, String message) {
+        Log.d(LOG_TAG, "onDownloadComplete");
+
+        HashMap<String, Subreddit> subreddits = (HashMap) result;
         if (mSwipeRefreshLayout.isRefreshing()) {
           mSwipeRefreshLayout.setRefreshing(false);
         }
-        restartLoader();
+        Log.d(LOG_TAG, "onDownloadComplete: " + subreddits.size());
+        if (mProgress.getVisibility() == View.VISIBLE) {
+          mProgress.setVisibility(View.GONE);
+        }
+
+        if (message.equals(YaraUtilityService.STATUS_OK)) {
+
+          if (subreddits.size() > 0) {
+            restartLoader();
+          } else {
+            mEmpty.setText(getContext().getString(R.string.error_no_subreddits));
+            mEmpty.setVisibility(View.VISIBLE);
+          }
+        } else {
+          Utils.handleError(getContext(), message);
+        }
       }
     }).execute();
   }
@@ -216,5 +257,40 @@ public class SubmissionListFragment extends Fragment
     }
   }
 
+  public void onAccountRetrieved(LoggedInAccount account, String message) {
+    Log.d(LOG_TAG, "onAccountRetrieved");
+    if (!message.equals(YaraUtilityService.STATUS_OK)) {
+      Utils.handleError(getContext(), message);
+    } else {
+      fetchSubreddits();
+    }
+  }
+
+  private Cursor advertisementCursor(Cursor data) {
+    MatrixCursor cursor = new MatrixCursor(data.getColumnNames());
+    int count = 0;
+    while (data.moveToNext()) {
+      count++;
+      if (count % 4 == 0) {
+        cursor.addRow(new Object[]{"AD"});
+      } else {
+        Object[] row = new Object[]{
+            cursor.getInt(COL_ID),
+            cursor.getInt(COL_SUBMISSION_ID),
+            cursor.getInt(COL_SUBREDDIT_ID),
+            cursor.getString(COL_SUBREDDIT_NAME),
+            cursor.getString(COL_TITLE),
+            cursor.getString(COL_TEXT),
+            cursor.getString(COL_AUTHOR),
+            cursor.getString(COL_THUMBNAIL),
+            cursor.getInt(COL_COMMENT_COUNT),
+            cursor.getInt(COL_SCORE),
+            cursor.getInt(COL_VOTE),
+        };
+        cursor.addRow(row);
+      }
+    }
+    return cursor;
+  }
 
 }

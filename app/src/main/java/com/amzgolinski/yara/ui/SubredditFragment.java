@@ -24,8 +24,11 @@ import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.adapter.SubredditAdapter;
+import com.amzgolinski.yara.callbacks.RedditDownloadCallback;
 import com.amzgolinski.yara.data.RedditContract;
 import com.amzgolinski.yara.service.YaraUtilityService;
+import com.amzgolinski.yara.tasks.FetchSubredditsTask;
+import com.amzgolinski.yara.util.Utils;
 
 import java.util.ArrayList;
 
@@ -64,7 +67,13 @@ public class SubredditFragment extends Fragment
       @Override
       public void onReceive(Context context, Intent intent) {
         Log.d(LOG_TAG, intent.getAction());
-        restartLoader();
+
+        boolean status = intent.getBooleanExtra(YaraUtilityService.PARAM_STATUS, true);
+        if (!status) {
+          Utils.handleError(context, intent.getStringExtra(YaraUtilityService.PARAM_MESSAGE));
+        } else {
+          restartLoader();
+        }
       }
     };
   }
@@ -125,6 +134,7 @@ public class SubredditFragment extends Fragment
   @Override
   public void onResume() {
     super.onResume();
+
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(
         mReceiver, new IntentFilter(YaraUtilityService.ACTION_SUBREDDIT_UNSUBSCRIBE));
   }
@@ -139,17 +149,36 @@ public class SubredditFragment extends Fragment
   public boolean onOptionsItemSelected(MenuItem item) {
     Log.d(LOG_TAG, "onOptionsItemSelected");
     // Handle item selection
+    boolean isNetworkAvailable = Utils.isNetworkAvailable(getContext());
+    String msg = getContext().getResources().getString(R.string.error_no_internet);
+
     switch (item.getItemId()) {
       case R.id.action_refresh:
-        Toast.makeText(getContext(), "Refresh", Toast.LENGTH_SHORT).show();
+        if (isNetworkAvailable) {
+          msg = getResources().getString(R.string.refreshing);
+          new FetchSubredditsTask(getContext(), new RedditDownloadCallback() {
+            @Override
+            public void onDownloadComplete(Object result, String message) {
+              if (message.equals(YaraUtilityService.STATUS_OK)) {
+                restartLoader();
+              } else {
+                Utils.handleError(getContext(), message);
+              }
+            }
+          }).execute();
+        }
+        Utils.showToast(getContext(), msg);
         return true;
       case R.id.action_save:
-        ArrayList<String> toRemove = mAdapter.getToRemove();
-        Toast.makeText(getContext(), "Remove " + toRemove.size(), Toast.LENGTH_SHORT).show();
-        if (toRemove.size() > 0) {
-          YaraUtilityService.subredditUnsubscribe(getContext(), toRemove);
-          getActivity().onBackPressed();
+        if (isNetworkAvailable) {
+          msg = getResources().getString(R.string.saving);
+          ArrayList<String> toRemove = mAdapter.getToRemove();
+          if (toRemove.size() > 0) {
+            YaraUtilityService.subredditUnsubscribe(getContext(), toRemove);
+            getActivity().onBackPressed();
+          }
         }
+        Utils.showToast(getContext(), msg);
         return true;
       default:
         return super.onOptionsItemSelected(item);

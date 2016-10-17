@@ -18,6 +18,7 @@ import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
 import com.amzgolinski.yara.R;
 import com.amzgolinski.yara.YaraApplication;
+import com.amzgolinski.yara.service.YaraUtilityService;
 import com.amzgolinski.yara.util.Utils;
 
 import java.net.URL;
@@ -54,7 +55,7 @@ public class LoginActivity extends AppCompatActivity {
         } else if (url.contains("error=")) {
           Toast.makeText(
               LoginActivity.this,
-              "You must press 'allow' to log in with this account",
+              getResources().getString(R.string.press_allow),
               Toast.LENGTH_SHORT).show();
           webView.loadUrl(authorizationUrl.toExternalForm());
         }
@@ -74,21 +75,20 @@ public class LoginActivity extends AppCompatActivity {
               .onUserChallenge(params[0], creds);
           AuthenticationManager.get().getRedditClient().authenticate(data);
 
-          //AuthenticationManager.get().onAuthenticated(data);
-
           String user = AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
           String token =
               AuthenticationManager.get().getRedditClient().getOAuthHelper().getRefreshToken();
 
-          String token2 = AuthenticationManager.get().getRedditClient().getOAuthData().getRefreshToken();
-
-          Log.d(LOG_TAG, "token " + token + " token2 " + token2);
-
           Utils.setCurrentUser(LoginActivity.this.getApplicationContext(), user);
 
           return AuthenticationManager.get().getRedditClient().getAuthenticatedUser();
-        } catch (NetworkException | OAuthException e) {
-          Log.e(LOG_TAG, "Could not log in", e);
+        } catch (NetworkException networkException) {
+          Log.e(LOG_TAG, "Error logging into account.", networkException);
+          Utils.handleError(LoginActivity.this, YaraUtilityService.STATUS_NETWORK_EXCEPTION);
+          return null;
+        } catch (OAuthException oauthException) {
+          Log.e(LOG_TAG, "Could not log in", oauthException);
+          Utils.handleError(LoginActivity.this, YaraUtilityService.STATUS_AUTH_EXCEPTION);
           return null;
         }
       }

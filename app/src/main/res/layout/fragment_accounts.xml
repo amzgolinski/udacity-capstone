@@ -13,50 +13,37 @@
     tools:showIn="@layout/activity_accounts">
 
   <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                  xmlns:app="http://schemas.android.com/apk/res-auto"
                   android:id="@+id/account"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:clickable="false"
                   android:paddingBottom="16dp"
                   android:paddingTop="16dp">
-
     <ImageView
-
         android:id="@+id/account_image"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:gravity="center_vertical"
-        android:paddingEnd="8dp"
-        android:paddingStart="8dp"
-        android:src="@drawable/ic_person_black_24dp"
-        android:tint="?android:attr/colorAccent"/>
+        android:layout_height="@dimen/account_layout_height"
+        style="@style/account"
+        android:src="@drawable/ic_person_black_24dp"/>
 
     <TextView
         android:id="@+id/account_name"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="@dimen/account_layout_height"
         android:layout_alignTop="@+id/account_image"
         android:layout_toEndOf="@+id/account_image"
-        android:gravity="center_vertical"
-        android:paddingEnd="8dp"
-        android:paddingStart="8dp"
-        android:text="reddit_user"
-        android:textSize="24sp"/>
+        style="@style/account_name"
+        android:text="reddit_user"/>
 
     <ImageButton
         android:id="@+id/delete_account_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/account_icon_width"
+        android:layout_height="@dimen/account_layout_height"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:background="@android:color/transparent"
         android:contentDescription="@string/delete_account"
-        android:gravity="center_vertical"
-        android:paddingEnd="24dp"
-        android:paddingStart="24dp"
         android:src="@drawable/ic_delete_black_24dp"
-        android:tint="?android:attr/textColor"/>
+        style="@style/account_delete"/>
 
   </RelativeLayout>
 
@@ -66,7 +53,6 @@
       android:layout_below="@+id/account"/>
 
   <RelativeLayout
-
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_below="@id/divider"
@@ -76,7 +62,7 @@
     <TextView
         android:id="@+id/add_account_title"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="@dimen/account_layout_height"
         android:gravity="center_vertical"
         android:paddingEnd="8dp"
         android:paddingStart="8dp"
@@ -85,15 +71,12 @@
 
     <ImageButton
         android:id="@+id/add_account_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/account_icon_width"
+        android:layout_height="@dimen/account_layout_height"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:background="@android:color/transparent"
         android:contentDescription="@string/add_account"
-        android:onClick="addAccount"
-        android:paddingEnd="24dp"
-        android:paddingStart="24dp"
+        style="@style/account_add"
         android:src="@drawable/ic_add_circle_outline_black_24dp"
         android:tint="?android:attr/textColor"/>
 

@@ -7,30 +7,34 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.amzgolinski.yara.R;
+import com.amzgolinski.yara.callbacks.AccountRetrievedCallback;
+import com.amzgolinski.yara.service.YaraUtilityService;
+import com.amzgolinski.yara.sync.SubredditSyncAdapter;
+import com.amzgolinski.yara.tasks.FetchLoggedInAccountTask;
+import com.amzgolinski.yara.tasks.RefreshAccessTokenTask;
 
+import net.dean.jraw.auth.AuthenticationState;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.VoteDirection;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 
 public class Utils {
 
   public static final String EMPTY_STRING = "";
-  private static final String LOG_TAG = Utils.class.getName();
-
   public static final int UPVOTE = 1;
   public static final int NOVOTE = 0;
   public static final int DOWNVOTE = -1;
+
+  private static final String LOG_TAG = Utils.class.getName();
+  private static final String SYNC_IN_PROGRESS = "sync_in_progress";
 
   public static int convertDpToPixels(Context context, int dp) {
       return (int) (context.getResources().getDisplayMetrics().density * dp + 0.5f);
   }
 
   public static void logOutCurrentUser(Context context) {
-    Log.d(LOG_TAG, "logOutCurrentUser");
     SharedPreferences prefs =
         PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -39,18 +43,7 @@ public class Utils {
     editor.apply();
   }
 
-  public static String getOauthRefreshToken(Context context, String username) {
-
-    SharedPreferences prefs =
-        PreferenceManager.getDefaultSharedPreferences(context);
-
-    String oauthToken =  prefs.getString(username, EMPTY_STRING);
-    Log.d(LOG_TAG, String.format("Username %s\nToken %s ", username, oauthToken));
-    return oauthToken;
-  }
-
   public static VoteDirection getVote(int currentVote, int newVote) {
-    Log.d(LOG_TAG, "current " + currentVote + " new " + newVote);
     VoteDirection toReturn = VoteDirection.NO_VOTE;
 
     if (newVote > currentVote ) {
@@ -83,7 +76,8 @@ public class Utils {
   }
 
   public static boolean isNetworkAvailable(Context ctx) {
-    ConnectivityManager cm = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+    ConnectivityManager cm =
+        (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
     NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
     return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
   }
@@ -105,6 +99,15 @@ public class Utils {
     );
   }
 
+  @SuppressWarnings("ResourceType")
+  public static
+  int
+  getSyncStatus(Context context) {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    return prefs.getInt(
+        context.getString(R.string.sync_status_key), SubredditSyncAdapter.LOCATION_STATUS_UNKNOWN);
+  }
+
   public static String longToRedditId(long id) {
     return Long.toString(id, 36);
   }
@@ -117,34 +120,82 @@ public class Utils {
     editor.apply();
   }
 
-  public static void putOauthRefreshToken(Context context, String username, String oauthToken) {
-    Log.d(LOG_TAG, String.format("Adding token: username %s\nToken %s ", username, oauthToken));
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-    SharedPreferences.Editor editor = prefs.edit();
-    editor.putString(username, oauthToken);
-    editor.apply();
-  }
-
   public static long redditIdToLong(String redditId) {
-
-    Long id = Long.parseLong(redditId, 36);
-    //Log.d(LOG_TAG, "ID: " + redditId + " translated: " + Long.toString(id));
-    return id;
+    return Long.parseLong(redditId, 36);
   }
 
   public static long redditParentIdToLong(String parentId) {
-    Long id = Long.parseLong(parentId.substring(3), 36);
-    return id;
+    return Long.parseLong(parentId.substring(3), 36);
   }
 
   public static String removeHtmlSpacing(String html) {
-
     html = html.replace("<div class=\"md\">", "");
     html = html.replace("</div>", "");
     html = html.replace("<p>", "");
     html = html.replace("</p>", "");
-
     return html;
+  }
+
+  public static void handleError(Context context, String message) {
+
+    if (message.equals(YaraUtilityService.STATUS_NETWORK_EXCEPTION)) {
+      Utils.showToast(context, context.getString(R.string.error_network_exception));
+    } else if (message.equals(YaraUtilityService.STATUS_NO_INTERNET)) {
+      Utils.showToast(context, context.getString(R.string.error_no_internet));
+    } else if (message.equals(YaraUtilityService.STATUS_API_EXCEPTION)) {
+      Utils.showToast(context, context.getString(R.string.error_api_exception));
+    } else if (message.equals(YaraUtilityService.STATUS_AUTH_EXCEPTION)) {
+      Utils.showToast(context, context.getString(R.string.error_auth_exception));
+    }
+  }
+
+  public static void showToast(Context context, String message) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+  }
+
+  public static void updateAuth(Context context, AuthenticationState state,
+                                AccountRetrievedCallback callback) {
+    switch (state) {
+      case READY:
+        Log.d(LOG_TAG, state.toString());
+        new FetchLoggedInAccountTask(context, callback).execute();
+        break;
+      case NEED_REFRESH:
+        Log.d(LOG_TAG, state.toString());
+        Log.d(LOG_TAG, "NOT REFRESHING");
+        if (!Utils.isRefreshing(context)) {
+          Log.d(LOG_TAG, "NOT REFRESHING");
+          new RefreshAccessTokenTask(context, callback).execute();
+          setAuthRefreshStatus(context);
+        }
+        break;
+      case NONE:
+        Log.d(LOG_TAG, state.toString());
+        break;
+    }
+  }
+
+  public static void setAuthRefreshStatus(Context context) {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean(context.getString(R.string.refresh_status_key), true);
+    editor.commit();
+  }
+
+  public static boolean isRefreshing(Context context) {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    boolean refreshing = prefs.getBoolean(context.getString(R.string.refresh_status_key), false);
+    Log.d(LOG_TAG, "REFRESHING: " + refreshing);
+    return refreshing;
+  }
+
+  public static void clearAuthRefreshStatus(Context context) {
+    SharedPreferences prefs =
+        PreferenceManager.getDefaultSharedPreferences(context);
+
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.remove(context.getString(R.string.refresh_status_key));
+    editor.apply();
   }
 
 }

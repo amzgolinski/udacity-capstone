@@ -195,7 +195,9 @@ public class RedditProvider extends ContentProvider {
       }
 
       case SUBMISSION: {
+        Log.d(LOG_TAG, "SUBMISSION");
         long _id = db.insert(RedditContract.SubmissionsEntry.TABLE_NAME, null, values);
+        Log.d(LOG_TAG, "SUBMISSION: " + _id);
         // insert unless it is already contained in the database
         if (_id > 0) {
           uriToReturn = RedditContract.SubmissionsEntry.buildSubmissionUri(_id);
@@ -325,19 +327,16 @@ public class RedditProvider extends ContentProvider {
       }
 
       case SUBMISSION: {
-        Log.d(LOG_TAG, "SUBMISSION");
         results = getSubmissions(projection, selection, selectionArgs, sortOrder);
         break;
       }
 
       case SUBMISSION_WITH_ID: {
-        Log.d(LOG_TAG, "SUBMISSION_WITH_ID");
         results = getSubmissionsById(uri, projection, sortOrder);
         break;
       }
 
       case SUBMISSION_WITH_SUBREDDIT_ID: {
-        Log.d(LOG_TAG, "SUBMISSION_WITH_ID");
         results = getSubmissionsBySubredditId(uri, projection, sortOrder);
         break;
       }
@@ -406,8 +405,6 @@ public class RedditProvider extends ContentProvider {
       }
 
       case SUBREDDIT_WITH_ID: {
-        Log.d(LOG_TAG, "SUBREDDIT_WITH_ID");
-        Log.d(LOG_TAG, values.toString());
         rowsUpdated = db.update(
             RedditContract.SubredditsEntry.TABLE_NAME,
             values,
@@ -417,8 +414,6 @@ public class RedditProvider extends ContentProvider {
       }
 
       case SUBMISSION_WITH_ID: {
-        Log.d(LOG_TAG, "SUBMISSION_WITH_ID");
-        Log.d(LOG_TAG, uri.toString());
         rowsUpdated = db.update(
             RedditContract.SubmissionsEntry.TABLE_NAME,
             values,
@@ -428,8 +423,6 @@ public class RedditProvider extends ContentProvider {
       }
 
       case SUBMISSION_WITH_SUBREDDIT_ID: {
-        Log.d(LOG_TAG, "SUBMISSION_WITH_SUBREDDIT_ID");
-        Log.d(LOG_TAG, uri.toString());
         rowsUpdated = db.update(
             RedditContract.SubmissionsEntry.TABLE_NAME,
             values,
@@ -439,8 +432,6 @@ public class RedditProvider extends ContentProvider {
       }
 
       case COMMENT_WITH_SUBMISSION_ID: {
-        Log.d(LOG_TAG, "COMMENT_WITH_SUBMISSION_ID");
-        Log.d(LOG_TAG, uri.toString());
         rowsUpdated = db.update(
             RedditContract.CommentsEntry.TABLE_NAME,
             values,

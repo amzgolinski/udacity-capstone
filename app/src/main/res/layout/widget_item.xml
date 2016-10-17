@@ -13,22 +13,16 @@
       android:id="@+id/widget_item_title"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginStart="8dp"
-      android:contentDescription="@string/appwidget_text"
-      tools:text="This is the title of the post"
-      android:textSize="14sp"
-      android:textStyle="bold|italic"/>
+      style="@style/widget_item_title"
+      tools:text="This is the title of the post"/>
 
   <TextView
       xmlns:android="http://schemas.android.com/apk/res/android"
       android:id="@+id/widget_item_detail"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginTop="2dp"
-      android:layout_marginStart="8dp"
-      tools:text="/r/aww"
-      android:textSize="12sp"/>
+      style="@style/widget_item_detail"
 
-
+      tools:text="/r/aww"/>
 
 </LinearLayout>

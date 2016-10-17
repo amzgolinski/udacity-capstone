@@ -11,18 +11,16 @@
   <TextView
       android:id="@+id/subreddit_name"
       android:layout_width="wrap_content"
-      android:layout_height="48dp"
-      android:text="/r/LifeProTips"
-      android:textSize="18sp"
-      android:paddingStart="16dp"
-      android:gravity="center"/>
+      android:layout_height="@dimen/subreddit_item_layout_height"
+      style="@style/subreddit_name"
+      android:text="/r/LifeProTips"/>
 
   <CheckBox
       android:id="@+id/subreddit_checkBox"
+      style="@style/subreddit_checkbox"
       android:layout_width="wrap_content"
-      android:layout_height="48dp"
+      android:layout_height="@dimen/subreddit_item_layout_height"
       android:layout_alignBottom="@+id/subreddit_name"
-      android:layout_alignParentEnd="true"
-      android:layout_marginEnd="48dp"/>
+      android:layout_alignParentEnd="true"/>
 
 </RelativeLayout>
