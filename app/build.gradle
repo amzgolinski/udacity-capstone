@@ -6,13 +6,13 @@ android {
         release {
             keyAlias 'Key'
             keyPassword 'password'
-            storeFile file('yara.jks')
+            storeFile file('../yara.jks')
             storePassword 'password'
         }
         debug {
             keyAlias 'Key'
             keyPassword 'password'
-            storeFile file('yara.jks')
+            storeFile file('../yara.jks')
             storePassword 'password'
         }
     }

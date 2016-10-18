@@ -24,7 +24,6 @@ public class AndroidTokenStore implements TokenStore {
 
     @Override
     public String readToken(String key) throws NoSuchTokenException {
-        Log.d("AndroidTokenStore", "Trying to access token: " + key);
         String token = getSharedPreferences().getString(key, null);
         if (token == null)
             throw new NoSuchTokenException("Token for key '" + key + "' does not exist");
@@ -33,7 +32,6 @@ public class AndroidTokenStore implements TokenStore {
 
     @Override
     public void writeToken(String key, String token) {
-        Log.d("AndroidTokenStore", "Adding token for user: " + key + " token: " + token);
         getSharedPreferences().edit()
                 .putString(key, token)
                 .apply();

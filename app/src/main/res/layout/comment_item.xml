@@ -14,15 +14,13 @@
         android:id="@+id/comment_author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/comment_author"
-        android:text="capstone_test" />
+        style="@style/comment_author"/>
 
     <TextView
         android:id="@+id/comment_body"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/comment_text"
-        android:text="This is the comment.  blah blah blah" />
+        style="@style/comment_text"/>
 
     <ProgressBar
         android:id="@+id/load_comments_progress"

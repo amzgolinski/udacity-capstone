@@ -13,16 +13,13 @@
       android:id="@+id/widget_item_title"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      style="@style/widget_item_title"
-      tools:text="This is the title of the post"/>
+      style="@style/widget_item_title"/>
 
   <TextView
       xmlns:android="http://schemas.android.com/apk/res/android"
       android:id="@+id/widget_item_detail"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      style="@style/widget_item_detail"
-
-      tools:text="/r/aww"/>
+      style="@style/widget_item_detail"/>
 
 </LinearLayout>

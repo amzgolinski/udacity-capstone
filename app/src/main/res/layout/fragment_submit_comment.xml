@@ -15,8 +15,7 @@
   <TextView
       android:id="@+id/submit_comment_submission_title"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:text="This is the title of the post"/>
+      android:layout_height="wrap_content"/>
 
   <View
       android:id="@+id/divider"

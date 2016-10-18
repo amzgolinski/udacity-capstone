@@ -12,8 +12,7 @@
       android:id="@+id/subreddit_name"
       android:layout_width="wrap_content"
       android:layout_height="@dimen/subreddit_item_layout_height"
-      style="@style/subreddit_name"
-      android:text="/r/LifeProTips"/>
+      style="@style/subreddit_name"/>
 
   <CheckBox
       android:id="@+id/subreddit_checkBox"

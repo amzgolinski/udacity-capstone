@@ -34,8 +34,7 @@
         style="@style/submission_item_subreddit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/thumbnail_container"
-        android:text="/r/LifeProTips"/>
+        android:layout_toEndOf="@id/thumbnail_container"/>
 
     <TextView
         android:id="@+id/submission_item_author"
@@ -43,8 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@+id/submission_item_subreddit"
-        android:textStyle="italic"
-        android:text="capstone_test"/>
+        android:textStyle="italic"/>
 
     <TextView
         android:id="@+id/submission_item_title"
@@ -52,8 +50,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/submission_item_subreddit"
-        android:layout_toEndOf="@id/thumbnail_container"
-        android:text="Primitive Technology Spear Thrower"/>
+        android:layout_toEndOf="@id/thumbnail_container"/>
 
 
   </RelativeLayout>

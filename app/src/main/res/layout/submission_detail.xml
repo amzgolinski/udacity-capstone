@@ -14,31 +14,27 @@
         android:id="@+id/submission_detail_subreddit_name"
         style="@style/submission_detail_subreddit"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="/r/LifeProTips"/>
+        android:layout_height="wrap_content"/>
 
     <TextView
         android:id="@+id/submission_detail_author"
         style="@style/submission_detail_author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@+id/submission_detail_subreddit_name"
-        android:text="capstone_test"/>
+        android:layout_toEndOf="@+id/submission_detail_subreddit_name"/>
   </RelativeLayout>
 
   <TextView
       android:id="@+id/submission_detail_title"
       style="@style/submission_detail_title"
       android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="Mr. Rogers having an interesting snack.  This is a really long title "/>
+      android:layout_height="wrap_content"/>
 
   <TextView
       android:id="@+id/submission_detail_text"
       style="@style/submission_detail_text"
       android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="THIS IS MORE TEXT"/>
+      android:layout_height="wrap_content"/>
 
   <FrameLayout
       android:layout_width="match_parent"
@@ -74,8 +70,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_toEndOf="@+id/comment_icon"
-        android:text="12345 comments"/>
+        android:layout_toEndOf="@+id/comment_icon"/>
 
     <RelativeLayout
         android:id="@+id/score_container"
@@ -95,8 +90,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_toEndOf="@+id/up_arrow"
-          style="@style/submission_detail_score"
-          android:text="78907"/>
+          style="@style/submission_detail_score"/>
 
       <ImageView
           android:id="@+id/down_arrow"

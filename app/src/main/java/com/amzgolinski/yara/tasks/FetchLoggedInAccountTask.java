@@ -28,11 +28,9 @@ public class FetchLoggedInAccountTask extends AsyncTask<Void, Void, LoggedInAcco
 
   @Override
   protected LoggedInAccount doInBackground(Void... params) {
-    Log.d(LOG_TAG, "FetchLoggedInAccountTask");
     mMessage = YaraUtilityService.STATUS_OK;
     LoggedInAccount account = null;
     if (!Utils.isNetworkAvailable(mContext)) {
-      Log.d(LOG_TAG, "Network Not avaialable");
       mMessage = YaraUtilityService.STATUS_NO_INTERNET;
       return null;
     }
@@ -48,7 +46,6 @@ public class FetchLoggedInAccountTask extends AsyncTask<Void, Void, LoggedInAcco
 
   @Override
   protected void onPostExecute(LoggedInAccount account) {
-    Log.d(LOG_TAG, "onPostExecute");
     Log.d(LOG_TAG, mMessage);
     mCallback.onAccountRetrieved(account, mMessage);
   }

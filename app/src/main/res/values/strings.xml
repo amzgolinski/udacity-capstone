@@ -79,7 +79,8 @@
   <string name="error_api_exception">
     There was an Reddit API error.  Please try again later.
   </string>
-
   <string name="error_auth_exception">There was a problem with authentication.</string>
+
+  <!-- -->
 
 </resources>

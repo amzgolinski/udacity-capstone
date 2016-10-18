@@ -88,7 +88,6 @@ public class FetchSubredditsTask extends AsyncTask<Void, Void, HashMap<String, S
       submissions = paginator.next();
 
       if (submissions == null) {
-        Log.d(LOG_TAG, "Submissions was null");
         return processed;
       }
 

@@ -19,7 +19,7 @@ public class YaraWidgetService extends RemoteViewsService {
   public static final String LOG_TAG = YaraWidgetService.class.getName();
 
   public YaraWidgetService() {
-    Log.d(LOG_TAG, "YaraWidgetService");
+
   }
 
   private static final String[] SUBMISSION_COLUMNS = {

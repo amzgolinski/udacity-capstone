@@ -55,7 +55,6 @@ public class FetchCommentsTask extends AsyncTask<String, Void, ArrayList<Comment
   }
 
   public void onPostExecute(ArrayList<CommentItem> comments) {
-    Log.d(LOG_TAG, "onPostExecute");
     mCallback.onDownloadComplete(comments, mMessage);
   }
 
