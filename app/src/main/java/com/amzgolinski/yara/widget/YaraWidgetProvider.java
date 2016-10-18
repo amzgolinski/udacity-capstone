@@ -108,16 +108,6 @@ public class YaraWidgetProvider extends AppWidgetProvider {
     Log.d(LOG_TAG, "Length: " + appWidgetIds.length);
     appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_submission_list);
 
-    if (intent.getAction().equals(YaraUtilityService.ACTION_SUBMISSIONS_UPDATED)) {
-      /*
-      Log.d(LOG_TAG, "IN IF");
-      AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-      int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, getClass()));
-      Log.d(LOG_TAG, "Length: " + appWidgetIds.length);
-      appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_submission_list);
-      */
-    }
-
   }
 
 }
